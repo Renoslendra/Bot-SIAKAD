@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}Riwayat{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1>RIWAYAT</h1>
+            <p>History dan laporan seleksi mata kuliah</p>
+        </div>
+        <div style="display: flex; gap: var(--space-sm);">
+            <button class="btn btn-outline btn-sm" id="btn-export">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                EXPORT CSV
+            </button>
+            <button class="btn btn-outline btn-sm" id="btn-filter">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                </svg>
+                FILTER
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="stats-grid">
+    <div class="stat-card blue">
+        <div class="stat-label">TOTAL SESSIONS</div>
+        <div class="stat-value">12</div>
+        <div class="stat-change neutral">
+            <span>All Time</span>
+        </div>
+    </div>
+
+    <div class="stat-card green">
+        <div class="stat-label">SUCCESSFUL</div>
+        <div class="stat-value">10</div>
+        <div class="stat-change positive">
+            <span>83% Success Rate</span>
+        </div>
+    </div>
+
+    <div class="stat-card yellow">
+        <div class="stat-label">TOTAL ATTEMPTS</div>
+        <div class="stat-value">247</div>
+        <div class="stat-change neutral">
+            <span>Average: 20.6</span>
+        </div>
+    </div>
+
+    <div class="stat-card red">
+        <div class="stat-label">FAILED</div>
+        <div class="stat-value">2</div>
+        <div class="stat-change negative">
+            <span>17% Failure Rate</span>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+    <button class="tab active" data-tab="sessions">SESSION HISTORY</button>
+    <button class="tab" data-tab="attempts">ATTEMPT LOG</button>
+    <button class="tab" data-tab="errors">ERROR LOG</button>
+</div>
+
+<!-- Sessions Tab -->
+<div class="tab-content active" id="tab-sessions">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">SESSION HISTORY</div>
+            <span class="badge badge-neutral">12 SESSIONS</span>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>SESSION ID</th>
+                            <th>TANGGAL</th>
+                            <th>DURASI</th>
+                            <th>ATTEMPTS</th>
+                            <th>COURSES</th>
+                            <th>SKS</th>
+                            <th>STATUS</th>
+                            <th>AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#20260119-001</span></td>
+                            <td>19 Jan 2026, 21:45</td>
+                            <td>00:15:23</td>
+                            <td><span style="font-weight: 700;">8</span></td>
+                            <td><span style="font-weight: 700;">8/8</span></td>
+                            <td><span style="font-weight: 700;">23</span></td>
+                            <td><span class="badge badge-success">SUCCESS</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">VIEW</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#20260118-002</span></td>
+                            <td>18 Jan 2026, 10:30</td>
+                            <td>00:22:45</td>
+                            <td><span style="font-weight: 700;">15</span></td>
+                            <td><span style="font-weight: 700;">7/8</span></td>
+                            <td><span style="font-weight: 700;">20</span></td>
+                            <td><span class="badge badge-warning">PARTIAL</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">VIEW</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#20260118-001</span></td>
+                            <td>18 Jan 2026, 08:15</td>
+                            <td>00:18:12</td>
+                            <td><span style="font-weight: 700;">12</span></td>
+                            <td><span style="font-weight: 700;">8/8</span></td>
+                            <td><span style="font-weight: 700;">23</span></td>
+                            <td><span class="badge badge-success">SUCCESS</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">VIEW</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#20260117-003</span></td>
+                            <td>17 Jan 2026, 19:20</td>
+                            <td>00:25:34</td>
+                            <td><span style="font-weight: 700;">28</span></td>
+                            <td><span style="font-weight: 700;">8/8</span></td>
+                            <td><span style="font-weight: 700;">23</span></td>
+                            <td><span class="badge badge-success">SUCCESS</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">VIEW</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#20260117-002</span></td>
+                            <td>17 Jan 2026, 14:45</td>
+                            <td>00:30:18</td>
+                            <td><span style="font-weight: 700;">45</span></td>
+                            <td><span style="font-weight: 700;">6/8</span></td>
+                            <td><span style="font-weight: 700;">17</span></td>
+                            <td><span class="badge badge-danger">FAILED</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">VIEW</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#20260117-001</span></td>
+                            <td>17 Jan 2026, 09:00</td>
+                            <td>00:12:56</td>
+                            <td><span style="font-weight: 700;">10</span></td>
+                            <td><span style="font-weight: 700;">8/8</span></td>
+                            <td><span style="font-weight: 700;">23</span></td>
+                            <td><span class="badge badge-success">SUCCESS</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">VIEW</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Attempts Tab -->
+<div class="tab-content" id="tab-attempts" style="display: none;">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">ATTEMPT LOG</div>
+            <span class="badge badge-neutral">247 ATTEMPTS</span>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ATTEMPT #</th>
+                            <th>TIMESTAMP</th>
+                            <th>COURSE</th>
+                            <th>RESULT</th>
+                            <th>DURATION</th>
+                            <th>MESSAGE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#247</span></td>
+                            <td>19 Jan 2026, 21:58:45</td>
+                            <td>Kecerdasan Buatan</td>
+                            <td><span class="badge badge-success">SUCCESS</span></td>
+                            <td>2.3s</td>
+                            <td style="font-size: 12px; color: var(--muted);">Selected successfully</td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#246</span></td>
+                            <td>19 Jan 2026, 21:58:42</td>
+                            <td>Rekayasa Perangkat Lunak</td>
+                            <td><span class="badge badge-success">SUCCESS</span></td>
+                            <td>1.8s</td>
+                            <td style="font-size: 12px; color: var(--muted);">Selected successfully</td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#245</span></td>
+                            <td>19 Jan 2026, 21:58:39</td>
+                            <td>Sistem Operasi</td>
+                            <td><span class="badge badge-success">SUCCESS</span></td>
+                            <td>2.1s</td>
+                            <td style="font-size: 12px; color: var(--muted);">Selected successfully</td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#244</span></td>
+                            <td>19 Jan 2026, 21:58:36</td>
+                            <td>Jaringan Komputer</td>
+                            <td><span class="badge badge-success">SUCCESS</span></td>
+                            <td>1.9s</td>
+                            <td style="font-size: 12px; color: var(--muted);">Selected successfully</td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#243</span></td>
+                            <td>19 Jan 2026, 21:58:33</td>
+                            <td>Pemrograman Web</td>
+                            <td><span class="badge badge-success">SUCCESS</span></td>
+                            <td>2.0s</td>
+                            <td style="font-size: 12px; color: var(--muted);">Selected successfully</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Errors Tab -->
+<div class="tab-content" id="tab-errors" style="display: none;">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">ERROR LOG</div>
+            <span class="badge badge-danger">5 ERRORS</span>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ERROR ID</th>
+                            <th>TIMESTAMP</th>
+                            <th>TYPE</th>
+                            <th>MESSAGE</th>
+                            <th>SESSION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#ERR-005</span></td>
+                            <td>17 Jan 2026, 15:12:34</td>
+                            <td><span class="badge badge-danger">TIMEOUT</span></td>
+                            <td style="font-size: 12px;">Request timeout after 30s</td>
+                            <td><span style="font-family: var(--font-mono); font-size: 12px;">#20260117-002</span></td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#ERR-004</span></td>
+                            <td>17 Jan 2026, 15:10:22</td>
+                            <td><span class="badge badge-warning">QUOTA_FULL</span></td>
+                            <td style="font-size: 12px;">Course quota exceeded</td>
+                            <td><span style="font-family: var(--font-mono); font-size: 12px;">#20260117-002</span></td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#ERR-003</span></td>
+                            <td>17 Jan 2026, 15:08:15</td>
+                            <td><span class="badge badge-warning">SCHEDULE_CONFLICT</span></td>
+                            <td style="font-size: 12px;">Schedule conflict detected</td>
+                            <td><span style="font-family: var(--font-mono); font-size: 12px;">#20260117-002</span></td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#ERR-002</span></td>
+                            <td>15 Jan 2026, 11:25:18</td>
+                            <td><span class="badge badge-danger">LOGIN_FAILED</span></td>
+                            <td style="font-size: 12px;">Invalid credentials</td>
+                            <td><span style="font-family: var(--font-mono); font-size: 12px;">#20260115-001</span></td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-family: var(--font-mono); font-size: 13px;">#ERR-001</span></td>
+                            <td>14 Jan 2026, 09:45:33</td>
+                            <td><span class="badge badge-danger">NETWORK</span></td>
+                            <td style="font-size: 12px;">Connection lost</td>
+                            <td><span style="font-family: var(--font-mono); font-size: 12px;">#20260114-002</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Export button
+    document.getElementById('btn-export').addEventListener('click', function() {
+        showToast('Exporting data to CSV...', 'info');
+        setTimeout(() => {
+            window.location.href = '/api/export/csv';
+        }, 500);
+    });
+    
+    // Filter button
+    document.getElementById('btn-filter').addEventListener('click', function() {
+        showToast('Filter options coming soon', 'info');
+    });
+});
+</script>
+{% endblock %}

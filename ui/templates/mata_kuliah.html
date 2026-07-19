@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+
+{% block title %}Mata Kuliah{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1>MATA KULIAH</h1>
+            <p>Manajemen prioritas mata kuliah Semester 5</p>
+        </div>
+        <button class="btn btn-primary" id="btn-add-mk">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            ADD COURSE
+        </button>
+    </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="stats-grid">
+    <div class="stat-card blue">
+        <div class="stat-label">TOTAL MATA KULIAH</div>
+        <div class="stat-value" id="total-mk-count">8</div>
+        <div class="stat-change neutral">
+            <span>Priority Courses</span>
+        </div>
+    </div>
+
+    <div class="stat-card green">
+        <div class="stat-label">TOTAL SKS</div>
+        <div class="stat-value" id="total-sks-count">23</div>
+        <div class="stat-change positive">
+            <span>Target Achieved</span>
+        </div>
+    </div>
+
+    <div class="stat-card yellow">
+        <div class="stat-label">FALLBACK COURSES</div>
+        <div class="stat-value" id="fallback-count">3</div>
+        <div class="stat-change neutral">
+            <span>Backup Options</span>
+        </div>
+    </div>
+</div>
+
+<!-- Priority Courses Table -->
+<div class="card" style="margin-bottom: var(--space-lg);">
+    <div class="card-header">
+        <div class="card-title">PRIORITY COURSES</div>
+        <div style="display: flex; gap: var(--space-sm);">
+            <button class="btn btn-sm btn-outline" id="btn-reorder">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                </svg>
+                REORDER
+            </button>
+            <button class="btn btn-sm btn-outline" id="btn-export">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                EXPORT
+            </button>
+        </div>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-container">
+            <table class="table" id="priority-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">PRI</th>
+                        <th>KODE</th>
+                        <th>MATA KULIAH</th>
+                        <th style="width: 80px;">SKS</th>
+                        <th>KELAS</th>
+                        <th style="width: 150px;">JADWAL</th>
+                        <th style="width: 100px;">STATUS</th>
+                        <th style="width: 120px;">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="priority-tbody">
+                    <tr data-priority="1">
+                        <td><span style="font-weight: 700; color: var(--m-blue-dark);">1</span></td>
+                        <td><span style="font-family: var(--font-mono); font-size: 13px;">CS5001</span></td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--primary);">Algoritma & Pemrograman</div>
+                            <div style="font-size: 12px; color: var(--muted);">Wajib</div>
+                        </td>
+                        <td><span style="font-weight: 700; color: var(--primary);">3</span></td>
+                        <td><span class="badge badge-info">A</span></td>
+                        <td><span style="font-size: 12px;">Senin 08:00-10:30</span></td>
+                        <td><span class="badge badge-success">OPEN</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">EDIT</button>
+                        </td>
+                    </tr>
+                    <tr data-priority="2">
+                        <td><span style="font-weight: 700; color: var(--m-blue-dark);">2</span></td>
+                        <td><span style="font-family: var(--font-mono); font-size: 13px;">CS5002</span></td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--primary);">Struktur Data</div>
+                            <div style="font-size: 12px; color: var(--muted);">Wajib</div>
+                        </td>
+                        <td><span style="font-weight: 700; color: var(--primary);">4</span></td>
+                        <td><span class="badge badge-info">B</span></td>
+                        <td><span style="font-size: 12px;">Selasa 10:00-12:30</span></td>
+                        <td><span class="badge badge-success">OPEN</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">EDIT</button>
+                        </td>
+                    </tr>
+                    <tr data-priority="3">
+                        <td><span style="font-weight: 700; color: var(--m-blue-dark);">3</span></td>
+                        <td><span style="font-family: var(--font-mono); font-size: 13px;">CS5003</span></td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--primary);">Basis Data</div>
+                            <div style="font-size: 12px; color: var(--muted);">Wajib</div>
+                        </td>
+                        <td><span style="font-weight: 700; color: var(--primary);">3</span></td>
+                        <td><span class="badge badge-info">A</span></td>
+                        <td><span style="font-size: 12px;">Rabu 13:00-15:30</span></td>
+                        <td><span class="badge badge-warning">FULL</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">EDIT</button>
+                        </td>
+                    </tr>
+                    <tr data-priority="4">
+                        <td><span style="font-weight: 700; color: var(--m-blue-dark);">4</span></td>
+                        <td><span style="font-family: var(--font-mono); font-size: 13px;">CS5004</span></td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--primary);">Pemrograman Web</div>
+                            <div style="font-size: 12px; color: var(--muted);">Wajib</div>
+                        </td>
+                        <td><span style="font-weight: 700; color: var(--primary);">3</span></td>
+                        <td><span class="badge badge-info">C</span></td>
+                        <td><span style="font-size: 12px;">Kamis 08:00-10:30</span></td>
+                        <td><span class="badge badge-success">OPEN</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">EDIT</button>
+                        </td>
+                    </tr>
+                    <tr data-priority="5">
+                        <td><span style="font-weight: 700; color: var(--m-blue-dark);">5</span></td>
+                        <td><span style="font-family: var(--font-mono); font-size: 13px;">CS5005</span></td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--primary);">Jaringan Komputer</div>
+                            <div style="font-size: 12px; color: var(--muted);">Wajib</div>
+                        </td>
+                        <td><span style="font-weight: 700; color: var(--primary);">3</span></td>
+                        <td><span class="badge badge-info">A</span></td>
+                        <td><span style="font-size: 12px;">Jumat 10:00-12:30</span></td>
+                        <td><span class="badge badge-success">OPEN</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">EDIT</button>
+                        </td>
+                    </tr>
+                    <tr data-priority="6">
+                        <td><span style="font-weight: 700; color: var(--m-blue-dark);">6</span></td>
+                        <td><span style="font-family: var(--font-mono); font-size: 13px;">CS5006</span></td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--primary);">Sistem Operasi</div>
+                            <div style="font-size: 12px; color: var(--muted);">Wajib</div>
+                        </td>
+                        <td><span style="font-weight: 700; color: var(--primary);">3</span></td>
+                        <td><span class="badge badge-info">B</span></td>
+                        <td><span style="font-size: 12px;">Senin 13:00-15:30</span></td>
+                        <td><span class="badge badge-success">OPEN</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">EDIT</button>
+                        </td>
+                    </tr>
+                    <tr data-priority="7">
+                        <td><span style="font-weight: 700; color: var(--m-blue-dark);">7</span></td>
+                        <td><span style="font-family: var(--font-mono); font-size: 13px;">CS5007</span></td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--primary);">Rekayasa Perangkat Lunak</div>
+                            <div style="font-size: 12px; color: var(--muted);">Wajib</div>
+                        </td>
+                        <td><span style="font-weight: 700; color: var(--primary);">3</span></td>
+                        <td><span class="badge badge-info">A</span></td>
+                        <td><span style="font-size: 12px;">Rabu 08:00-10:30</span></td>
+                        <td><span class="badge badge-success">OPEN</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">EDIT</button>
+                        </td>
+                    </tr>
+                    <tr data-priority="8">
+                        <td><span style="font-weight: 700; color: var(--m-blue-dark);">8</span></td>
+                        <td><span style="font-family: var(--font-mono); font-size: 13px;">CS5008</span></td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--primary);">Kecerdasan Buatan</div>
+                            <div style="font-size: 12px; color: var(--muted);">Pilihan</div>
+                        </td>
+                        <td><span style="font-weight: 700; color: var(--primary);">4</span></td>
+                        <td><span class="badge badge-info">A</span></td>
+                        <td><span style="font-size: 12px;">Kamis 13:00-15:30</span></td>
+                        <td><span class="badge badge-success">OPEN</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">EDIT</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Fallback Courses -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">FALLBACK COURSES</div>
+        <span class="badge badge-neutral">OPTIONAL</span>
+    </div>
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>KODE</th>
+                        <th>MATA KULIAH</th>
+                        <th style="width: 80px;">SKS</th>
+                        <th>KELAS</th>
+                        <th style="width: 150px;">JADWAL</th>
+                        <th style="width: 100px;">STATUS</th>
+                        <th style="width: 120px;">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span style="font-family: var(--font-mono); font-size: 13px;">CS5009</span></td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--primary);">Matematika Diskrit</div>
+                            <div style="font-size: 12px; color: var(--muted);">Pilihan</div>
+                        </div>
+                        <td><span style="font-weight: 700; color: var(--primary);">3</span></td>
+                        <td><span class="badge badge-info">B</span></td>
+                        <td><span style="font-size: 12px;">Selasa 13:00-15:30</span></td>
+                        <td><span class="badge badge-success">OPEN</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">EDIT</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span style="font-family: var(--font-mono); font-size: 13px;">CS5010</span></td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--primary);">Teori Komputasi</div>
+                            <div style="font-size: 12px; color: var(--muted);">Pilihan</div>
+                        </div>
+                        <td><span style="font-weight: 700; color: var(--primary);">3</span></td>
+                        <td><span class="badge badge-info">A</span></td>
+                        <td><span style="font-size: 12px;">Jumat 08:00-10:30</span></td>
+                        <td><span class="badge badge-success">OPEN</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">EDIT</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span style="font-family: var(--font-mono); font-size: 13px;">CS5011</span></td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--primary);">Metode Numerik</div>
+                            <div style="font-size: 12px; color: var(--muted);">Pilihan</div>
+                        </div>
+                        <td><span style="font-weight: 700; color: var(--primary);">3</span></td>
+                        <td><span class="badge badge-info">C</span></td>
+                        <td><span style="font-size: 12px;">Senin 10:00-12:30</span></td>
+                        <td><span class="badge badge-success">OPEN</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" style="padding: 6px 12px;">EDIT</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Course Modal -->
+<div class="modal-overlay" id="modal-add-course">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">ADD NEW COURSE</div>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Course Code</label>
+                <input type="text" class="form-input" id="course-code" placeholder="e.g., CS5001">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Course Name</label>
+                <input type="text" class="form-input" id="course-name" placeholder="e.g., Algoritma & Pemrograman">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">SKS</label>
+                    <input type="number" class="form-input" id="course-sks" placeholder="3" min="1" max="6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Class</label>
+                    <select class="form-select" id="course-class">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Schedule</label>
+                <input type="text" class="form-input" id="course-schedule" placeholder="e.g., Senin 08:00-10:30">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Type</label>
+                <select class="form-select" id="course-type">
+                    <option value="Wajib">Wajib</option>
+                    <option value="Pilihan">Pilihan</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <label class="form-label" style="margin: 0;">Fallback Course</label>
+                        <div class="form-hint">Jadikan sebagai mata kuliah cadangan</div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="course-fallback">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal()">CANCEL</button>
+            <button class="btn btn-primary" onclick="addCourse()">ADD COURSE</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.getElementById('btn-add-mk').addEventListener('click', function() {
+    document.getElementById('modal-add-course').classList.add('active');
+});
+
+function closeModal() {
+    document.getElementById('modal-add-course').classList.remove('active');
+    // Reset form
+    document.getElementById('course-code').value = '';
+    document.getElementById('course-name').value = '';
+    document.getElementById('course-sks').value = '';
+    document.getElementById('course-schedule').value = '';
+    document.getElementById('course-fallback').checked = false;
+}
+
+function addCourse() {
+    const code = document.getElementById('course-code').value.trim();
+    const name = document.getElementById('course-name').value.trim();
+    const sks = parseInt(document.getElementById('course-sks').value) || 3;
+    const className = document.getElementById('course-class').value;
+    const schedule = document.getElementById('course-schedule').value.trim();
+    const type = document.getElementById('course-type').value;
+    const isFallback = document.getElementById('course-fallback').checked;
+    
+    // Validation
+    if (!code) {
+        showToast('Course code is required', 'error');
+        return;
+    }
+    if (!name) {
+        showToast('Course name is required', 'error');
+        return;
+    }
+    if (!schedule) {
+        showToast('Schedule is required', 'error');
+        return;
+    }
+    
+    const course = {
+        code: code,
+        name: name,
+        sks: sks,
+        class_name: className,
+        schedule: schedule,
+        type: type,
+        is_fallback: isFallback
+    };
+    
+    // Send to API
+    fetch('/api/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(course)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Course added successfully', 'success');
+            closeModal();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast('Failed to add course: ' + (data.error || 'Unknown error'), 'error');
+        }
+    })
+    .catch(err => {
+        showToast('Error adding course', 'error');
+        console.error(err);
+    });
+}
+</script>
+{% endblock %}

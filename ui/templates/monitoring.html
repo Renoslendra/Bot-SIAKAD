@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}Monitoring{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1>MONITORING</h1>
+            <p>Real-time monitoring bot operation</p>
+        </div>
+        <div style="display: flex; gap: var(--space-sm);">
+            <button class="btn btn-outline btn-sm" id="btn-refresh">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+                REFRESH
+            </button>
+            <button class="btn btn-outline btn-sm" id="btn-clear-log">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                CLEAR LOG
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Live Stats -->
+<div class="stats-grid">
+    <div class="stat-card blue">
+        <div class="stat-label">UPTIME</div>
+        <div class="stat-value" id="uptime">00:00:00</div>
+        <div class="stat-change neutral">
+            <span>Since Last Start</span>
+        </div>
+    </div>
+
+    <div class="stat-card green">
+        <div class="stat-label">SUCCESS RATE</div>
+        <div class="stat-value" id="success-rate">0%</div>
+        <div class="stat-change positive">
+            <span>Attempt Success</span>
+        </div>
+    </div>
+
+    <div class="stat-card yellow">
+        <div class="stat-label">CURRENT ATTEMPT</div>
+        <div class="stat-value" id="current-attempt">0/100</div>
+        <div class="stat-change neutral">
+            <span>Progress</span>
+        </div>
+    </div>
+
+    <div class="stat-card red">
+        <div class="stat-label">ERRORS</div>
+        <div class="stat-value" id="error-count">0</div>
+        <div class="stat-change neutral">
+            <span>Last 24 Hours</span>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Bar -->
+<div class="card" style="margin-bottom: var(--space-lg);">
+    <div class="card-header">
+        <div class="card-title">SELECTION PROGRESS</div>
+        <span class="badge badge-info" id="progress-badge">0/8 COURSES</span>
+    </div>
+    <div class="card-body">
+        <div style="margin-bottom: var(--space-md);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-xs);">
+                <span style="font-size: 12px; color: var(--muted);">Overall Progress</span>
+                <span style="font-size: 12px; color: var(--primary); font-weight: 700;" id="progress-percent">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill blue" id="progress-bar" style="width: 0%;"></div>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-top: var(--space-lg);">
+            <div style="text-align: center; padding: var(--space-md); background: var(--surface-soft); border: 1px solid var(--hairline);">
+                <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-xs);">LOGIN</div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--success);" id="status-login">✓</div>
+            </div>
+            <div style="text-align: center; padding: var(--space-md); background: var(--surface-soft); border: 1px solid var(--hairline);">
+                <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-xs);">SCRAPING</div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--muted);" id="status-scraping">○</div>
+            </div>
+            <div style="text-align: center; padding: var(--space-md); background: var(--surface-soft); border: 1px solid var(--hairline);">
+                <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-xs);">SELECTING</div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--muted);" id="status-selecting">○</div>
+            </div>
+            <div style="text-align: center; padding: var(--space-md); background: var(--surface-soft); border: 1px solid var(--hairline);">
+                <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-xs);">SUBMIT</div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--muted);" id="status-submit">○</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2-1">
+    <!-- Live Console -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">LIVE CONSOLE</div>
+            <div style="display: flex; gap: var(--space-sm); align-items: center;">
+                <span class="status-dot active"></span>
+                <span style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">LIVE</span>
+            </div>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="console" id="console-output">
+                <div class="console-line">
+                    <span class="console-timestamp">[21:45:03]</span>
+                    <span class="console-level info">INFO</span>
+                    <span class="console-message">Bot started successfully</span>
+                </div>
+                <div class="console-line">
+                    <span class="console-timestamp">[21:45:05]</span>
+                    <span class="console-level success">SUCCESS</span>
+                    <span class="console-message">Login to SIAKAD completed</span>
+                </div>
+                <div class="console-line">
+                    <span class="console-timestamp">[21:45:08]</span>
+                    <span class="console-level info">INFO</span>
+                    <span class="console-message">Navigating to KRS page...</span>
+                </div>
+                <div class="console-line">
+                    <span class="console-timestamp">[21:45:12]</span>
+                    <span class="console-level info">INFO</span>
+                    <span class="console-message">Scraping course data...</span>
+                </div>
+                <div class="console-line">
+                    <span class="console-timestamp">[21:45:15]</span>
+                    <span class="console-level success">SUCCESS</span>
+                    <span class="console-message">Found 8 priority courses</span>
+                </div>
+                <div class="console-line">
+                    <span class="console-timestamp">[21:45:18]</span>
+                    <span class="console-level info">INFO</span>
+                    <span class="console-message">Starting course selection...</span>
+                </div>
+                <div class="console-line">
+                    <span class="console-timestamp">[21:45:22]</span>
+                    <span class="console-level success">SUCCESS</span>
+                    <span class="console-message">Selected: Algoritma & Pemrograman (3 SKS)</span>
+                </div>
+                <div class="console-line">
+                    <span class="console-timestamp">[21:45:25]</span>
+                    <span class="console-level success">SUCCESS</span>
+                    <span class="console-message">Selected: Struktur Data (4 SKS)</span>
+                </div>
+                <div class="console-line">
+                    <span class="console-timestamp">[21:45:28]</span>
+                    <span class="console-level warning">WARNING</span>
+                    <span class="console-message">Basis Data class A is full, trying fallback...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Selection Status -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">COURSE STATUS</div>
+        </div>
+        <div class="card-body">
+            <ul class="activity-list">
+                <li class="activity-item">
+                    <div class="activity-icon success">✓</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Algoritma & Pemrograman</div>
+                        <div class="activity-desc">3 SKS | Class A | Selected</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-icon success">✓</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Struktur Data</div>
+                        <div class="activity-desc">4 SKS | Class B | Selected</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-icon warning">⚠</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Basis Data</div>
+                        <div class="activity-desc">3 SKS | Class A | Full</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-icon info">○</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Pemrograman Web</div>
+                        <div class="activity-desc">3 SKS | Class C | Pending</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-icon info">○</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Jaringan Komputer</div>
+                        <div class="activity-desc">3 SKS | Class A | Pending</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const consoleOutput = document.getElementById('console-output');
+    let lastLogCount = 0;
+    
+    // Load console logs from API
+    function loadConsoleLogs() {
+        fetch('/api/logs')
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to fetch logs');
+                return res.json();
+            })
+            .then(data => {
+                const logs = data.logs || [];
+                if (logs.length !== lastLogCount) {
+                    renderConsoleLogs(logs);
+                    lastLogCount = logs.length;
+                }
+            })
+            .catch(err => {
+                console.error('Failed to load logs:', err);
+            });
+    }
+    
+    // Render console logs
+    function renderConsoleLogs(logs) {
+        consoleOutput.innerHTML = '';
+        logs.slice(-50).forEach(log => {
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            line.innerHTML = `
+                <span class="console-timestamp">[${log.timestamp}]</span>
+                <span class="console-level ${log.level}">${log.level.toUpperCase()}</span>
+                <span class="console-message">${log.message}</span>
+            `;
+            consoleOutput.appendChild(line);
+        });
+        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    }
+    
+    // Update uptime from API
+    function updateUptime() {
+        fetch('/api/status')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('uptime').textContent = data.uptime || '00:00:00';
+            })
+            .catch(err => {
+                console.error('Failed to fetch status:', err);
+            });
+    }
+    
+    // Initial load
+    loadConsoleLogs();
+    updateUptime();
+    
+    // Auto-refresh every 3 seconds
+    setInterval(loadConsoleLogs, 3000);
+    setInterval(updateUptime, 1000);
+    
+    // Refresh button
+    document.getElementById('btn-refresh').addEventListener('click', function() {
+        showToast('Refreshing data...', 'info');
+        loadConsoleLogs();
+        updateUptime();
+        setTimeout(() => showToast('Data refreshed', 'success'), 500);
+    });
+    
+    // Clear log button
+    document.getElementById('btn-clear-log').addEventListener('click', function() {
+        if (confirm('Clear all console logs?')) {
+            consoleOutput.innerHTML = '';
+            showToast('Console cleared', 'success');
+        }
+    });
+});
+</script>
+{% endblock %}

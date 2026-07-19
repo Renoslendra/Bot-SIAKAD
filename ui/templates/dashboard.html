@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>DASHBOARD</h1>
+    <p>Overview sistem Bot SIAKAD - Auto Course Selection</p>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card blue">
+        <div class="stat-label">STATUS BOT</div>
+        <div class="stat-value" id="bot-status">ACTIVE</div>
+        <div class="stat-change positive">
+            <span class="status-dot active"></span>
+            <span>Running</span>
+        </div>
+    </div>
+
+    <div class="stat-card green">
+        <div class="stat-label">MATA KULIAH</div>
+        <div class="stat-value" id="total-mk">8/8</div>
+        <div class="stat-change positive">
+            <span>Priority Complete</span>
+        </div>
+    </div>
+
+    <div class="stat-card yellow">
+        <div class="stat-label">TOTAL SKS</div>
+        <div class="stat-value" id="total-sks">23</div>
+        <div class="stat-change neutral">
+            <span>Target Semester 5</span>
+        </div>
+    </div>
+
+    <div class="stat-card red">
+        <div class="stat-label">ATTEMPTS</div>
+        <div class="stat-value" id="total-attempts">0</div>
+        <div class="stat-change neutral">
+            <span>Last 24 Hours</span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Grid -->
+<div class="grid-2-1">
+    <!-- Left Column: Bot Control & Activity -->
+    <div>
+        <!-- Bot Control -->
+        <div class="card" style="margin-bottom: var(--space-lg);">
+            <div class="card-header">
+                <div class="card-title">BOT CONTROL</div>
+                <span class="badge badge-success" id="control-badge">ONLINE</span>
+            </div>
+            <div class="card-body">
+                <div style="display: flex; gap: var(--space-md); margin-bottom: var(--space-lg);">
+                    <button class="btn btn-success" id="btn-start" style="flex: 1;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        START BOT
+                    </button>
+                    <button class="btn btn-danger" id="btn-stop" style="flex: 1;" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="6" width="12" height="12"></rect>
+                        </svg>
+                        STOP BOT
+                    </button>
+                </div>
+
+                <div style="display: flex; gap: var(--space-md);">
+                    <button class="btn btn-outline" id="btn-dry-run" style="flex: 1;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        DRY RUN
+                    </button>
+                    <button class="btn btn-outline" id="btn-status" style="flex: 1;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                        CHECK STATUS
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">RECENT ACTIVITY</div>
+                <button class="btn btn-sm btn-outline">VIEW ALL</button>
+            </div>
+            <div class="card-body">
+                <ul class="activity-list" id="activity-list">
+                    <li class="activity-item">
+                        <div class="activity-icon success">✓</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Bot started successfully</div>
+                            <div class="activity-desc">Login to SIAKAD completed</div>
+                        </div>
+                        <div class="activity-time">2 min ago</div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon info">ℹ</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Scraping course data</div>
+                            <div class="activity-desc">Found 8 priority courses</div>
+                        </div>
+                        <div class="activity-time">5 min ago</div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon success">✓</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Selection completed</div>
+                            <div class="activity-desc">23 SKS selected successfully</div>
+                        </div>
+                        <div class="activity-time">10 min ago</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Quick Info -->
+    <div>
+        <!-- Safety Status -->
+        <div class="card" style="margin-bottom: var(--space-lg);">
+            <div class="card-header">
+                <div class="card-title">SAFETY STATUS</div>
+            </div>
+            <div class="card-body">
+                <div style="margin-bottom: var(--space-md);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
+                        <span style="font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">ALLOW_SUBMIT</span>
+                        <span class="badge badge-danger" id="safety-submit">DISABLED</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">USE_FALLBACK</span>
+                        <span class="badge badge-danger" id="safety-fallback">DISABLED</span>
+                    </div>
+                </div>
+                <div style="padding: var(--space-md); background: var(--danger-bg); border: 1px solid rgba(226, 39, 24, 0.3); border-radius: var(--radius-sm);">
+                    <div style="font-size: 11px; color: var(--danger); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: var(--space-xs);">WARNING</div>
+                    <div style="font-size: 12px; color: var(--body);">Submit is locked until KRS period opens</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Info -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">SYSTEM INFO</div>
+            </div>
+            <div class="card-body">
+                <div style="font-size: 13px; line-height: 2;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--muted);">Version</span>
+                        <span style="color: var(--primary); font-weight: 700;">1.0.0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--muted);">Semester</span>
+                        <span style="color: var(--primary); font-weight: 700;">5</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--muted);">Target SKS</span>
+                        <span style="color: var(--primary); font-weight: 700;">23</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--muted);">Last Update</span>
+                        <span style="color: var(--primary); font-weight: 700;" id="last-update">--:--:--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Dashboard-specific initialization
+document.addEventListener('DOMContentLoaded', function() {
+    // Load activity log on dashboard
+    loadActivityLog();
+    
+    // Update time every second
+    function updateTime() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('id-ID');
+        const lastUpdate = document.getElementById('last-update');
+        if (lastUpdate) {
+            lastUpdate.textContent = timeStr;
+        }
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+});
+</script>
+{% endblock %}

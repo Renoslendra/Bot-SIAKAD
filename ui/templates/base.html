@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}Dashboard{% endblock %} - Bot SIAKAD</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- BMW M Tricolor Stripe -->
+    <div class="m-stripe"></div>
+    
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1 class="brand-text">BOT SIAKAD</h1>
+                <span class="brand-subtitle">UNIVERSITAS TRUNOJOYO MADURA</span>
+            </div>
+            
+            <!-- Hamburger Menu Button -->
+            <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <div class="nav-menu">
+                <a href="/" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">Dashboard</a>
+                <a href="/konfigurasi" class="nav-link {% if active_page == 'konfigurasi' %}active{% endif %}">Konfigurasi</a>
+                <a href="/mata_kuliah" class="nav-link {% if active_page == 'mata_kuliah' %}active{% endif %}">Mata Kuliah</a>
+                <a href="/monitoring" class="nav-link {% if active_page == 'monitoring' %}active{% endif %}">Monitoring</a>
+                <a href="/riwayat" class="nav-link {% if active_page == 'riwayat' %}active{% endif %}">Riwayat</a>
+            </div>
+            
+            <div class="nav-actions">
+                <button class="btn-icon" title="Notifications">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </button>
+                <div class="user-badge">
+                    <span class="user-name">ADMIN</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobile-menu">
+            <a href="/" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="/konfigurasi" class="nav-link {% if active_page == 'konfigurasi' %}active{% endif %}">Konfigurasi</a>
+            <a href="/mata_kuliah" class="nav-link {% if active_page == 'mata_kuliah' %}active{% endif %}">Mata Kuliah</a>
+            <a href="/monitoring" class="nav-link {% if active_page == 'monitoring' %}active{% endif %}">Monitoring</a>
+            <a href="/riwayat" class="nav-link {% if active_page == 'riwayat' %}active{% endif %}">Riwayat</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3 class="footer-title">BOT SIAKAD</h3>
+                <p class="footer-text">Auto Course Selection System</p>
+                <p class="footer-text">Semester 5 | Target 23 SKS</p>
+            </div>
+            <div class="footer-section">
+                <h3 class="footer-title">STATUS</h3>
+                <p class="footer-text">System: <span id="footer-status" class="status-indicator">IDLE</span></p>
+                <p class="footer-text">Last Update: <span id="footer-time">--:--:--</span></p>
+            </div>
+            <div class="footer-section">
+                <h3 class="footer-title">SAFETY</h3>
+                <p class="footer-text">ALLOW_SUBMIT: <span id="footer-submit" class="safety-off">DISABLED</span></p>
+                <p class="footer-text">USE_FALLBACK: <span id="footer-fallback" class="safety-off">DISABLED</span></p>
+            </div>
+            <div class="footer-section">
+                <h3 class="footer-title">DESIGN</h3>
+                <p class="footer-text">BMW-M Aesthetic</p>
+                <p class="footer-text">Premium Dark Interface</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p class="footer-copyright">&copy; 2026 Bot SIAKAD | Engineered with Precision</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

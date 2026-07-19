@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Konfigurasi{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1>KONFIGURASI</h1>
+            <p>Pengaturan credentials dan parameter bot</p>
+        </div>
+        <button class="btn btn-primary" id="btn-save-config">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            SAVE CHANGES
+        </button>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Credentials Section -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">SIAKAD CREDENTIALS</div>
+            <span class="badge badge-warning">ENCRYPTED</span>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">NIM (Username)</label>
+                <input type="text" class="form-input" id="nim" placeholder="Enter your NIM" value="{{ config.nim or '' }}">
+                <div class="form-hint">Nomor Induk Mahasiswa untuk login SIAKAD</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="password" placeholder="Enter your password" value="{{ config.password or '' }}">
+                <div class="form-hint">Password SIAKAD (tersimpan terenkripsi)</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">SIAKAD URL</label>
+                <input type="text" class="form-input form-input-mono" id="siakad-url" value="{{ config.siakad_url or 'https://siakad.trunojoyo.ac.id' }}" readonly>
+                <div class="form-hint">URL SIAKAD Universitas Trunojoyo Madura</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bot Settings -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">BOT SETTINGS</div>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">Semester</label>
+                <select class="form-select" id="semester">
+                    <option value="5" {% if config.semester == 5 %}selected{% endif %}>Semester 5</option>
+                    <option value="6" {% if config.semester == 6 %}selected{% endif %}>Semester 6</option>
+                    <option value="7" {% if config.semester == 7 %}selected{% endif %}>Semester 7</option>
+                </select>
+                <div class="form-hint">Semester aktif untuk seleksi mata kuliah</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Target SKS</label>
+                <input type="number" class="form-input" id="target-sks" value="{{ config.target_sks or 23 }}" min="18" max="24">
+                <div class="form-hint">Total SKS yang ingin diambil (18-24)</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Max Attempts</label>
+                <input type="number" class="form-input" id="max-attempts" value="{{ config.max_attempts or 100 }}" min="1" max="1000">
+                <div class="form-hint">Maksimal percobaan seleksi (1-1000)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2" style="margin-top: var(--space-lg);">
+    <!-- Safety Settings -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">SAFETY SETTINGS</div>
+            <span class="badge badge-danger">CRITICAL</span>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
+                    <div>
+                        <label class="form-label" style="margin: 0;">ALLOW_SUBMIT</label>
+                        <div class="form-hint">Izinkan bot melakukan submit KRS</div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="allow-submit" {% if config.allow_submit %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
+                    <div>
+                        <label class="form-label" style="margin: 0;">USE_FALLBACK</label>
+                        <div class="form-hint">Gunakan mata kuliah cadangan jika prioritas penuh</div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="use-fallback" {% if config.use_fallback %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
+                    <div>
+                        <label class="form-label" style="margin: 0;">AUTO_RETRY</label>
+                        <div class="form-hint">Otomatis retry jika terjadi error</div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="auto-retry" {% if config.auto_retry %}checked{% endif %} checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div style="padding: var(--space-md); background: var(--warning-bg); border: 1px solid rgba(244, 180, 0, 0.3); border-radius: var(--radius-sm); margin-top: var(--space-lg);">
+                <div style="font-size: 11px; color: var(--warning); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: var(--space-xs);">PERHATIAN</div>
+                <div style="font-size: 12px; color: var(--body);">Aktifkan ALLOW_SUBMIT hanya saat periode KRS dibuka. Bot akan langsung submit tanpa konfirmasi manual.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timing Settings -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">TIMING & RETRY</div>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">Delay Between Attempts (detik)</label>
+                <input type="number" class="form-input" id="delay-attempt" value="{{ config.delay_attempt or 5 }}" min="1" max="60">
+                <div class="form-hint">Jeda antar percobaan seleksi (1-60 detik)</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Retry Delay on Error (detik)</label>
+                <input type="number" class="form-input" id="retry-delay" value="{{ config.retry_delay or 30 }}" min="5" max="300">
+                <div class="form-hint">Jeda retry jika terjadi error (5-300 detik)</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Timeout (detik)</label>
+                <input type="number" class="form-input" id="timeout" value="{{ config.timeout or 30 }}" min="10" max="120">
+                <div class="form-hint">Timeout untuk setiap request (10-120 detik)</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Schedule Check Interval (menit)</label>
+                <input type="number" class="form-input" id="check-interval" value="{{ config.check_interval or 15 }}" min="5" max="60">
+                <div class="form-hint">Interval pengecekan jadwal bentrok (5-60 menit)</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const saveBtn = document.getElementById('btn-save-config');
+    
+    // Load config on page load
+    fetch('/api/config')
+        .then(res => res.json())
+        .then(config => {
+            document.getElementById('nim').value = config.nim || '';
+            document.getElementById('semester').value = config.semester || 5;
+            document.getElementById('target-sks').value = config.target_sks || 23;
+            document.getElementById('max-attempts').value = config.max_attempts || 100;
+            document.getElementById('allow-submit').checked = config.allow_submit || false;
+            document.getElementById('use-fallback').checked = config.use_fallback || false;
+            document.getElementById('auto-retry').checked = config.auto_retry || false;
+            document.getElementById('delay-attempt').value = config.delay_attempt || 5;
+            document.getElementById('retry-delay').value = config.retry_delay || 30;
+            document.getElementById('timeout').value = config.timeout || 30;
+            document.getElementById('check-interval').value = config.check_interval || 15;
+        })
+        .catch(err => {
+            console.error('Failed to load config:', err);
+            showToast('Failed to load configuration', 'error');
+        });
+    
+    // Save config with loading state
+    saveBtn.addEventListener('click', function() {
+        const btn = this;
+        const originalText = btn.innerHTML;
+        
+        // Validate required fields
+        const nim = document.getElementById('nim').value.trim();
+        const password = document.getElementById('password').value;
+        
+        if (!nim) {
+            showToast('NIM is required', 'error');
+            return;
+        }
+        
+        if (!password) {
+            showToast('Password is required', 'error');
+            return;
+        }
+        
+        // Show loading state
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-spinner"></span> SAVING...';
+        
+        const config = {
+            nim: nim,
+            password: password,
+            siakad_url: document.getElementById('siakad-url').value,
+            semester: parseInt(document.getElementById('semester').value),
+            target_sks: parseInt(document.getElementById('target-sks').value),
+            max_attempts: parseInt(document.getElementById('max-attempts').value),
+            allow_submit: document.getElementById('allow-submit').checked,
+            use_fallback: document.getElementById('use-fallback').checked,
+            auto_retry: document.getElementById('auto-retry').checked,
+            delay_attempt: parseInt(document.getElementById('delay-attempt').value),
+            retry_delay: parseInt(document.getElementById('retry-delay').value),
+            timeout: parseInt(document.getElementById('timeout').value),
+            check_interval: parseInt(document.getElementById('check-interval').value)
+        };
+
+        // Send to API with CSRF token
+        fetch('/api/config', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(config)
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast('Configuration saved successfully', 'success');
+            } else {
+                throw new Error(data.error || 'Unknown error');
+            }
+        })
+        .catch(err => {
+            console.error('Save error:', err);
+            showToast('Failed to save configuration: ' + err.message, 'error');
+        })
+        .finally(() => {
+            // Restore button state
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        });
+    });
+});
+</script>
+{% endblock %}
