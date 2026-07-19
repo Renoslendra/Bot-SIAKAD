@@ -13,6 +13,8 @@
 | Environment Config | python-dotenv | Latest |
 | Logging | loguru | Latest |
 | Runtime | Windows PowerShell 5.1 | - |
+| Optional Orchestrator | Hermes Agent | Latest |
+| Hermes Integration | Custom Skill (`bot-siakad`) | agentskills.io format |
 
 ---
 
@@ -20,30 +22,34 @@
 
 ```
 Bot-SIAKAD/
-├── .env                    # Credentials (JANGAN commit)
-├── .env.example            # Template .env
-├── .gitignore              # Git ignore rules
-├── config.py               # Konfigurasi MK & settings
-├── main.py                 # Entry point / orchestrator
-├── login.py                # Module: authentication
-├── scraper.py              # Module: scraping mata kuliah
-├── selector.py             # Module: course selection algorithm
-├── submitter.py            # Module: auto-submit KRS
-├── utils.py                # Shared utilities & helpers
-├── requirements.txt        # Python dependencies
-├── PRD.md                  # Product Requirements Document
-├── Task.md                 # Task breakdown & milestones
-├── Guideline.md            # This file
-├── README.md               # User-facing documentation
-└── logs/                   # Output directory (JANGAN commit)
-    ├── bot.log             # Activity log
-    ├── session.json        # Saved session cookies
-    ├── scraped_courses.json# Scraped course data
-    ├── selection_report.json# Selection results
-    └── screenshots/        # Browser screenshots
-        ├── login.png
-        ├── krs_before.png
-        └── krs_after.png
+├── main.py
+├── bot/
+│   ├── cli.py
+│   ├── config.py
+│   ├── login.py
+│   ├── scraper.py
+│   ├── selector.py
+│   ├── submitter.py
+│   ├── reporter.py
+│   └── utils.py
+├── config/
+│   ├── selectors.example.json
+│   └── selectors.json          # local only
+├── docs/
+│   ├── PRD.md
+│   ├── Task.md
+│   ├── Guideline.md
+│   ├── PREFLIGHT.md
+│   └── flowchart.html
+├── scripts/
+│   ├── recon.py
+│   └── check_semester5.py
+├── tests/
+├── hermes-skill/
+├── logs/                       # runtime, gitignored
+├── .env.example
+├── requirements.txt
+└── README.md
 ```
 
 ---
@@ -95,6 +101,8 @@ SIAKAD_PASSWORD=your_password
 HEADLESS=true
 LOG_LEVEL=INFO
 AUTO_CONFIRM=false
+ALLOW_SUBMIT=false
+USE_FALLBACK=false
 ```
 
 | Variable | Type | Default | Description |
@@ -104,11 +112,15 @@ AUTO_CONFIRM=false
 | HEADLESS | bool | true | Run browser tanpa GUI |
 | LOG_LEVEL | string | INFO | Logging level |
 | AUTO_CONFIRM | bool | false | Auto-confirm submit tanpa prompt |
+| ALLOW_SUBMIT | bool | false | Safety lock: izinkan submit production |
+| USE_FALLBACK | bool | false | Pakai MK cadangan jika priority < 23 SKS |
 
 ### 4.2 Config File (`config.py`)
 
 ```python
 TARGET_SKS = 23
+USE_FALLBACK = False  # from env
+ALLOW_SUBMIT = False  # from env
 
 PRIORITY_COURSES = [
     {"code": "IF2228", "name": "Sistem Terdistribusi", "sks": 3},
@@ -130,6 +142,7 @@ FALLBACK_COURSES = [
 
 SIAKAD_URL = "https://siakad.trunojoyo.ac.id"
 SIAKAD_KRS_URL = "https://siakad.trunojoyo.ac.id/index.php?pModule=zabIzKI=&pSub=zabIzKI=&pAct=16DG2g=="
+SELECTORS_PATH = "selectors.json"
 
 MAX_LOGIN_RETRIES = 3
 MAX_SUBMIT_RETRIES = 2
@@ -333,6 +346,7 @@ docs: update README with setup instructions
 def is_conflict(schedule_a: dict, schedule_b: dict) -> bool:
     if schedule_a["day"] != schedule_b["day"]:
         return False
+    # exact boundary (end == other start) is NOT conflict
     return (
         schedule_a["start"] < schedule_b["end"] and
         schedule_a["end"] > schedule_b["start"]
@@ -342,8 +356,8 @@ def is_conflict(schedule_a: dict, schedule_b: dict) -> bool:
 ### Time Parsing
 
 - Format input: `"Senin 08:00-10:30"`
-- Parse ke: `{"day": "Senin", "start": "08:00", "end": "10:30"}`
-- Convert time ke minutes untuk comparison: `"08:00"` → `480`, `"10:30"` → `630`
+- Parse ke: `{"day": "Senin", "start": 480, "end": 630}` (minutes from midnight)
+- Convert time ke minutes: `"08:00"` → `480`, `"10:30"` → `630`
 
 ### Conflict Examples
 
@@ -353,3 +367,227 @@ def is_conflict(schedule_a: dict, schedule_b: dict) -> bool:
 | Senin 08:00-10:30 | Senin 10:30-12:00 | NO (exact boundary) |
 | Senin 08:00-10:30 | Selasa 08:00-10:30 | NO (different day) |
 | Rabu 13:00-15:00 | Rabu 14:00-16:00 | YES (overlap) |
+
+---
+
+## 12. Data Models (Canonical Schemas)
+
+### 12.1 Course (available)
+
+```json
+{
+  "code": "IF2228",
+  "name": "Sistem Terdistribusi",
+  "sks": 3,
+  "classes": [
+    {
+      "class_name": "A",
+      "quota_remaining": 5,
+      "schedules": [
+        {"day": "Senin", "start": 480, "end": 630, "raw": "Senin 08:00-10:30"}
+      ]
+    }
+  ]
+}
+```
+
+### 12.2 Selected Course
+
+```json
+{
+  "code": "IF2228",
+  "name": "Sistem Terdistribusi",
+  "sks": 3,
+  "class_name": "A",
+  "schedules": [
+    {"day": "Senin", "start": 480, "end": 630, "raw": "Senin 08:00-10:30"}
+  ],
+  "source": "priority"
+}
+```
+
+### 12.3 Selection Report
+
+```json
+{
+  "timestamp": "2026-07-19T10:30:00",
+  "status": "SUCCESS",
+  "target_sks": 23,
+  "total_sks": 23,
+  "existing": [],
+  "selected": [],
+  "skipped": [
+    {"code": "IF2259", "reason": "all_classes_conflict"}
+  ],
+  "use_fallback": false
+}
+```
+
+### 12.4 Status values
+
+| Status | Meaning |
+|--------|---------|
+| `SUCCESS` | total_sks == target_sks |
+| `PARTIAL` | total_sks < target_sks, no fatal error |
+| `FAILED` | login/scrape/submit fatal error |
+
+---
+
+## 13. Fallback & Idempotent Rules
+
+### 13.1 Fallback
+
+1. Process `PRIORITY_COURSES` first (order = priority)
+2. If `total_sks < TARGET_SKS` and `USE_FALLBACK=true` → process `FALLBACK_COURSES`
+3. Never take courses outside both lists
+4. Default production: `USE_FALLBACK=false`
+
+### 13.2 Idempotent re-run
+
+1. Scrape existing KRS first
+2. Codes already in existing → skip selection for those codes
+3. Existing schedules seed `taken_schedules`
+4. Only submit newly selected courses
+5. Default: never delete existing KRS rows
+
+---
+
+## 14. Selector Map Standard
+
+File: `selectors.json` (created from `selectors.example.json` after recon)
+
+Required top-level keys:
+- `login.username`
+- `login.password`
+- `login.submit`
+- `login.error`
+- `login.captcha` (nullable)
+- `nav.krs`
+- `krs.course_rows`
+- `krs.fields` (code, name, sks, class_name, schedule, quota)
+- `krs.select_control`
+- `krs.submit`
+- `krs.success_message`
+- `krs.error_message`
+- `krs.existing_rows`
+
+Rules:
+- Fill only after live recon
+- Prefer stable CSS / role / text selectors
+- Update this file first when SIAKAD HTML changes
+
+---
+
+## 15. Hermes Agent Integration Standards
+
+### 15.1 Architecture Principle
+
+```
+Hermes = remote control + notifikasi + scheduling
+Core Bot = Python + Playwright (source of truth)
+```
+
+- Core bot **wajib** standalone (`python main.py` tanpa Hermes)
+- Hermes skill **hanya** wrapper: parse intent → jalankan terminal command → relay output
+- **Jangan** implement login/scrape/select lewat Hermes browser tools
+
+### 15.2 Skill Location
+
+| Environment | Path |
+|-------------|------|
+| Project-local (dev) | `Bot-SIAKAD/hermes-skill/` |
+| Hermes install target | `~/.hermes/skills/bot-siakad/` (atau path skill user Hermes) |
+
+### 15.3 SKILL.md Requirements
+
+```yaml
+---
+name: bot-siakad
+description: >
+  Automate KRS selection on SIAKAD Universitas Trunojoyo Madura
+  for semester 5 (23 SKS). Use when user asks about ambil KRS,
+  siakad bot, course selection, dry-run KRS, or status KRS.
+version: 1.0.0
+author: Bot-SIAKAD
+---
+```
+
+Body SKILL.md harus include:
+1. Kapan skill diaktifkan
+2. Prerequisites (Python, Playwright, `.env`, `selectors.json`)
+3. Working directory = root project Bot-SIAKAD
+4. Command table (`run` / `dry-run` / `status` / `report`)
+5. Safety rules (jangan minta password di chat; respect `ALLOW_SUBMIT`)
+6. Expected output format
+
+### 15.4 Command Mapping
+
+| User Intent | Hermes Action | Terminal Command |
+|-------------|---------------|------------------|
+| "dry-run KRS" | run dry-run | `python main.py --dry-run` |
+| "ambil KRS sekarang" | run full | `python main.py --auto-confirm` (butuh `ALLOW_SUBMIT=true`) |
+| "status KRS terakhir" | status/report | `python main.py --status` |
+| "lihat report" | read report file | read `logs/selection_report.json` |
+
+### 15.5 CLI Contract (untuk Hermes)
+
+| Flag | Effect |
+|------|--------|
+| `--dry-run` | Login + scrape + select, **tanpa submit** |
+| `--auto-confirm` | Skip prompt submit |
+| `--headless` / default from `.env` | Browser mode |
+| `--status` | Print last report only |
+
+Exit codes:
+- `0` = success / target SKS tercapai
+- `1` = failed / partial / error
+
+Stdout summary harus human-readable (dipakai Hermes untuk reply user).
+
+### 15.6 Security Rules for Hermes
+
+| Rule | Detail |
+|------|--------|
+| No credentials in chat | Username/password hanya di `.env` lokal |
+| No credential logging | Skill/bot jangan print password |
+| Confirm before submit | Default `AUTO_CONFIRM=false` |
+| Submit safety lock | Default `ALLOW_SUBMIT=false` |
+| Prefer dry-run first | Hermes disarankan dry-run sebelum run |
+| Scoped access | Skill hanya menjalankan bot di project path ini |
+
+### 15.7 Optional Cron Pattern
+
+Contoh schedule via Hermes:
+1. **Pre-check** (H-1 atau pagi): dry-run → pastikan scraper & selection OK
+2. **Go-live** (jam buka KRS): run mode → submit (hanya jika `ALLOW_SUBMIT=true`)
+3. **Notify**: kirim summary ke Telegram/Discord gateway Hermes
+
+Default aman: cron hanya dry-run kecuali user eksplisit minta auto-submit.
+
+### 15.8 Testing Checklist (Hermes)
+
+- [ ] Skill muncul di Hermes skill list
+- [ ] Natural language trigger skill dengan benar
+- [ ] Slash command `/bot-siakad` works
+- [ ] dry-run selesai dan summary muncul di chat
+- [ ] status/report menampilkan hasil terakhir
+- [ ] Missing `.env` menghasilkan error jelas
+- [ ] Wrong working directory ditangani/diarahkan
+- [ ] Submit mode hanya jalan jika `ALLOW_SUBMIT=true` + confirm/`AUTO_CONFIRM`
+
+---
+
+## 16. Preflight & Execution Safety
+
+| Step | Command / Action | Required for |
+|------|------------------|--------------|
+| 1 | Docs + scaffolding complete | coding |
+| 2 | Copy `.env.example` → `.env` + fill credentials | live test |
+| 3 | `pip install -r requirements.txt` && `playwright install chromium` | live test |
+| 4 | `pytest tests/ -q` | G-SETUP |
+| 5 | M0 recon → fill `selectors.json` | G-RECON |
+| 6 | `python main.py --dry-run` | G-DRY |
+| 7 | Review `logs/selection_report.json` | G-PROD |
+| 8 | Set `ALLOW_SUBMIT=true` then submit | production |
+
+**Never skip dry-run before first production submit.**

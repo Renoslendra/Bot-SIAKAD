@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot SIAKAD — Diagram Alir Sistem</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-section: #0b1121;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --decision: #8b5cf6;
+            --border: #334155;
+            --line: #475569;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+
+        /* Arrows */
+        .arrow {
+            width: 2px;
+            height: 30px;
+            background-color: var(--line);
+            position: relative;
+        }
+
+        .arrow::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid var(--line);
+        }
+
+        .arrow-short {
+            height: 20px;
+        }
+
+        /* Nodes */
+        .node {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 24px;
+            text-align: center;
+            min-width: 260px;
+            max-width: 380px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary);
+        }
+
+        .node-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+
+        .node-detail {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Specific Nodes */
+        .node-start, .node-end {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 999px;
+            padding: 12px 36px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            min-width: auto;
+        }
+
+        .node-end {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .node-decision {
+            background-color: rgba(139, 92, 246, 0.1);
+            border: 2px solid var(--decision);
+            border-radius: 8px;
+            transform: rotate(45deg);
+            padding: 20px;
+            min-width: 120px;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .node-decision:hover {
+            transform: rotate(45deg) scale(1.05);
+        }
+
+        .node-decision .node-title {
+            transform: rotate(-45deg);
+            margin: 0;
+            color: #c4b5fd;
+            font-size: 0.9rem;
+        }
+
+        .node-success { border-left: 4px solid var(--success); }
+        .node-error { border-left: 4px solid var(--danger); }
+        .node-action { border-left: 4px solid var(--primary); }
+
+        /* Sections */
+        .section {
+            width: 100%;
+            background-color: var(--bg-section);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .section-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Branches */
+        .branch {
+            display: flex;
+            gap: 60px;
+            align-items: flex-start;
+            justify-content: center;
+            width: 100%;
+            margin-top: -10px;
+        }
+
+        .branch-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .branch-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 999px;
+            margin-bottom: 5px;
+            z-index: 3;
+            background-color: var(--bg-main);
+        }
+
+        .label-yes { color: var(--success); border: 1px solid var(--success); }
+        .label-no { color: var(--danger); border: 1px solid var(--danger); }
+
+        /* Loops */
+        .loop-container {
+            width: 100%;
+            border: 2px dashed rgba(59, 130, 246, 0.5);
+            border-radius: 16px;
+            padding: 30px 20px;
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            background-color: rgba(59, 130, 246, 0.02);
+        }
+
+        .loop-title {
+            position: absolute;
+            top: -12px;
+            left: 24px;
+            background-color: var(--bg-section);
+            padding: 0 12px;
+            color: #60a5fa;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .inner-loop {
+            width: 90%;
+            border: 2px dashed rgba(16, 185, 129, 0.4);
+            border-radius: 12px;
+            padding: 30px 15px;
+            background-color: rgba(16, 185, 129, 0.02);
+        }
+
+        .inner-loop .loop-title {
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 60px;
+            padding: 24px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .text-left { text-align: left; }
+        .mt-2 { margin-top: 8px; }
+
+        @media (max-width: 768px) {
+            .branch { flex-direction: column; gap: 20px; }
+            .branch-item { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Bot SIAKAD — Diagram Alir Sistem</h1>
+        <p class="subtitle">Sistem Pemilihan Mata Kuliah Otomatis — Semester 5 — 23 SKS</p>
+    </header>
+
+    <div class="flowchart">
+        <!-- MULAI -->
+        <div class="node node-start">MULAI</div>
+        <div class="arrow"></div>
+
+        <div class="node node-action">
+            <div class="node-title">Muat Konfigurasi</div>
+            <div class="node-detail">Membaca file .env (username, password)</div>
+            <div class="node-detail">Membaca config.py (daftar prioritas, target SKS)</div>
+        </div>
+        <div class="arrow"></div>
+
+        <div class="node node-action">
+            <div class="node-title">Inisialisasi Browser</div>
+            <div class="node-detail">Menjalankan Playwright (Chromium)</div>
+        </div>
+        <div class="arrow"></div>
+
+        <!-- FASE 2: AUTENTIKASI -->
+        <div class="section">
+            <div class="section-title"><span class="badge">FASE 2</span> Autentikasi</div>
+            <div class="section-content">
+                <div class="node node-action">
+                    <div class="node-title">Buka Halaman Login</div>
+                    <div class="node-detail">https://siakad.trunojoyo.ac.id</div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-action">
+                    <div class="node-title">Masukkan Kredensial</div>
+                    <div class="node-detail">Input Username & Password</div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-decision">
+                    <div class="node-title">Ada<br>CAPTCHA?</div>
+                </div>
+                
+                <div class="branch">
+                    <div class="branch-item">
+                        <span class="branch-label label-yes">YA</span>
+                        <div class="arrow arrow-short"></div>
+                        <div class="node">
+                            <div class="node-title">Input Manual</div>
+                            <div class="node-detail">Screenshot CAPTCHA dan tunggu input dari pengguna</div>
+                        </div>
+                    </div>
+                    <div class="branch-item">
+                        <span class="branch-label label-no">TIDAK</span>
+                        <div class="arrow arrow-short"></div>
+                        <div class="node">
+                            <div class="node-title">Lanjut</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-action">
+                    <div class="node-title">Klik Tombol Login</div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-decision">
+                    <div class="node-title">Login<br>Berhasil?</div>
+                </div>
+
+                <div class="branch">
+                    <div class="branch-item">
+                        <span class="branch-label label-no">TIDAK</span>
+                        <div class="arrow arrow-short"></div>
+                        <div class="node node-error">
+                            <div class="node-title">Coba Ulang Login</div>
+                            <div class="node-detail">Maksimal 3 percobaan</div>
+                        </div>
+                    </div>
+                    <div class="branch-item">
+                        <span class="branch-label label-yes">YA</span>
+                        <div class="arrow arrow-short"></div>
+                        <div class="node node-success">
+                            <div class="node-title">Login Sukses</div>
+                            <div class="node-detail">Menyimpan session cookies</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="arrow"></div>
+
+        <!-- FASE 3: SCRAPING -->
+        <div class="section">
+            <div class="section-title"><span class="badge">FASE 3</span> Pengambilan Data (Scraping)</div>
+            <div class="section-content">
+                <div class="node node-action">
+                    <div class="node-title">Buka Halaman KRS</div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-action">
+                    <div class="node-title">Tunggu Halaman Dimuat</div>
+                    <div class="node-detail">Memastikan semua elemen tersedia</div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-action">
+                    <div class="node-title">Ambil Data Mata Kuliah</div>
+                    <div class="node-detail">Ekstrak: Nama MK, Kode, SKS, Kelas, Jadwal, Kuota</div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-action">
+                    <div class="node-title">Saring Data</div>
+                    <div class="node-detail">Mencocokkan dengan daftar prioritas (config.py)</div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-success">
+                    <div class="node-title">Simpan ke JSON</div>
+                    <div class="node-detail">logs/scraped_courses.json</div>
+                </div>
+            </div>
+        </div>
+        <div class="arrow"></div>
+
+        <!-- FASE 4: ALGORITMA GREEDY -->
+        <div class="section">
+            <div class="section-title"><span class="badge">FASE 4</span> Pemilihan Mata Kuliah (Algoritma Greedy)</div>
+            <div class="section-content">
+                <div class="node node-action">
+                    <div class="node-title">Inisialisasi Status</div>
+                    <div class="node-detail">SKS Terkumpul = 0, Daftar MK Terpilih = []</div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="loop-container">
+                    <div class="loop-title">PERULANGAN: Untuk Setiap MK di Daftar Prioritas</div>
+                    
+                    <div class="node node-decision">
+                        <div class="node-title">SKS == 23?</div>
+                    </div>
+                    
+                    <div class="branch">
+                        <div class="branch-item">
+                            <span class="branch-label label-yes">YA (Target Tercapai)</span>
+                            <div class="arrow arrow-short"></div>
+                            <div class="node node-success">
+                                <div class="node-title">Hentikan Perulangan</div>
+                            </div>
+                        </div>
+                        <div class="branch-item">
+                            <span class="branch-label label-no">TIDAK</span>
+                            <div class="arrow arrow-short"></div>
+                            <div class="node">
+                                <div class="node-title">Ambil Daftar Kelas</div>
+                                <div class="node-detail">Ambil semua kelas (A, B, C) untuk MK ini</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="arrow"></div>
+
+                    <div class="loop-container inner-loop">
+                        <div class="loop-title">PERULANGAN DALAM: Untuk Setiap Kelas</div>
+                        
+                        <div class="node node-decision">
+                            <div class="node-title">Kuota > 0?</div>
+                        </div>
+                        <div class="arrow arrow-short"></div>
+
+                        <div class="node node-decision">
+                            <div class="node-title">Jadwal<br>Aman?</div>
+                        </div>
+                        <div class="arrow arrow-short"></div>
+
+                        <div class="node node-decision">
+                            <div class="node-title">SKS + Total<br><= 23?</div>
+                        </div>
+
+                        <div class="branch">
+                            <div class="branch-item">
+                                <span class="branch-label label-no">ADA YANG TIDAK TERPENUHI</span>
+                                <div class="arrow arrow-short"></div>
+                                <div class="node node-error">
+                                    <div class="node-title">Lewati Kelas</div>
+                                    <div class="node-detail">Coba kelas berikutnya</div>
+                                </div>
+                            </div>
+                            <div class="branch-item">
+                                <span class="branch-label label-yes">SEMUA TERPENUHI</span>
+                                <div class="arrow arrow-short"></div>
+                                <div class="node node-success">
+                                    <div class="node-title">Pilih Kelas Ini</div>
+                                    <div class="node-detail">Tambahkan ke daftar terpilih, update total SKS, hentikan perulangan dalam</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="arrow"></div>
+                    
+                    <div class="node node-action">
+                        <div class="node-title">Catat Hasil Pemilihan MK</div>
+                    </div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-success">
+                    <div class="node-title">Buat Laporan Pemilihan</div>
+                    <div class="node-detail">logs/selection_report.json</div>
+                </div>
+            </div>
+        </div>
+        <div class="arrow"></div>
+
+        <!-- FASE 5: SUBMIT -->
+        <div class="section">
+            <div class="section-title"><span class="badge">FASE 5</span> Pengiriman KRS Otomatis</div>
+            <div class="section-content">
+                <div class="node node-action">
+                    <div class="node-title">Tampilkan Ringkasan</div>
+                    <div class="node-detail">Tampilkan MK, kelas, jadwal, dan total SKS yang akan diambil</div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-decision">
+                    <div class="node-title">Konfirmasi<br>Otomatis?</div>
+                </div>
+
+                <div class="branch">
+                    <div class="branch-item">
+                        <span class="branch-label label-no">TIDAK</span>
+                        <div class="arrow arrow-short"></div>
+                        <div class="node node-action">
+                            <div class="node-title">Minta Persetujuan</div>
+                            <div class="node-detail">Menunggu konfirmasi pengguna (Y/N)</div>
+                        </div>
+                    </div>
+                    <div class="branch-item">
+                        <span class="branch-label label-yes">YA</span>
+                        <div class="arrow arrow-short"></div>
+                        <div class="node">
+                            <div class="node-title">Lanjut Otomatis</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-action">
+                    <div class="node-title">Pilih MK di SIAKAD</div>
+                    <div class="node-detail">Otomatis mencentang kelas yang telah dipilih</div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-action">
+                    <div class="node-title">Screenshot Sebelum Kirim</div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-action">
+                    <div class="node-title">Klik Simpan/Submit KRS</div>
+                </div>
+                <div class="arrow"></div>
+
+                <div class="node node-decision">
+                    <div class="node-title">Pengiriman<br>Berhasil?</div>
+                </div>
+
+                <div class="branch">
+                    <div class="branch-item">
+                        <span class="branch-label label-no">TIDAK</span>
+                        <div class="arrow arrow-short"></div>
+                        <div class="node node-error">
+                            <div class="node-title">Coba Ulang Pengiriman</div>
+                            <div class="node-detail">Jika terus gagal, catat error dan beritahu pengguna</div>
+                        </div>
+                    </div>
+                    <div class="branch-item">
+                        <span class="branch-label label-yes">YA</span>
+                        <div class="arrow arrow-short"></div>
+                        <div class="node node-success">
+                            <div class="node-title">KRS Berhasil Disimpan</div>
+                            <div class="node-detail">Berhasil diverifikasi oleh SIAKAD</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="arrow"></div>
+
+        <!-- AKHIR -->
+        <div class="section">
+            <div class="section-title"><span class="badge">AKHIR</span> Laporan Output</div>
+            <div class="section-content">
+                <div class="node node-success" style="max-width: 500px;">
+                    <div class="node-title">Hasilkan Laporan Akhir</div>
+                    <div class="node-detail text-left mt-2" style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;">
+                        ========================================<br>
+                        BOT SIAKAD — HASIL AKHIR<br>
+                        ========================================<br>
+                        Status: BERHASIL<br><br>
+                        Total SKS Terambil: 23 / 23<br>
+                        Daftar MK tersimpan di log.<br>
+                        ========================================
+                    </div>
+                </div>
+                <div class="arrow"></div>
+                <div class="node node-action">
+                    <div class="node-title">Tutup Browser & Bersihkan</div>
+                    <div class="node-detail">Menyimpan log dan screenshot akhir</div>
+                </div>
+                <div class="arrow"></div>
+                <div class="node node-end">SELESAI</div>
+            </div>
+        </div>
+
+        <!-- LEGENDA -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #10b981, #059669);"></div>
+                <span>Mulai / Selesai</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="border-left: 4px solid var(--primary); background: var(--bg-card);"></div>
+                <span>Tindakan (Action)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: rgba(139, 92, 246, 0.2); border: 2px solid var(--decision);"></div>
+                <span>Keputusan (Decision)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="border-left: 4px solid var(--success); background: var(--bg-card);"></div>
+                <span>Berhasil (Success)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="border-left: 4px solid var(--danger); background: var(--bg-card);"></div>
+                <span>Gagal (Error)</span>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+</body>
+</html>

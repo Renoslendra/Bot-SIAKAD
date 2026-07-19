@@ -1,0 +1,75 @@
+from __future__ import annotations
+
+from bot import config
+from bot.submitter import preflight_submit
+
+
+def test_preflight_blocks_dry_run() -> None:
+    ok, reason = preflight_submit(
+        dry_run=True,
+        selected=[{"code": "IF2228", "sks": 3}],
+        period={"is_open": True},
+        selectors={"krs": {"select_control": "input", "submit": "button"}},
+    )
+    assert ok is False
+    assert "dry-run" in reason.lower()
+
+
+def test_preflight_blocks_when_allow_submit_false(monkeypatch) -> None:
+    monkeypatch.setattr(config, "ALLOW_SUBMIT", False)
+    ok, reason = preflight_submit(
+        dry_run=False,
+        selected=[{"code": "IF2228", "sks": 3}],
+        period={"is_open": True},
+        selectors={"krs": {"select_control": "input", "submit": "button"}},
+    )
+    assert ok is False
+    assert "ALLOW_SUBMIT" in reason
+
+
+def test_preflight_blocks_empty_selected(monkeypatch) -> None:
+    monkeypatch.setattr(config, "ALLOW_SUBMIT", True)
+    ok, reason = preflight_submit(
+        dry_run=False,
+        selected=[],
+        period={"is_open": True},
+        selectors={"krs": {"select_control": "input", "submit": "button"}},
+    )
+    assert ok is False
+    assert "tidak ada mk" in reason.lower()
+
+
+def test_preflight_blocks_closed_period(monkeypatch) -> None:
+    monkeypatch.setattr(config, "ALLOW_SUBMIT", True)
+    ok, reason = preflight_submit(
+        dry_run=False,
+        selected=[{"code": "IF2228", "sks": 3}],
+        period={"is_open": False, "reason": "Bukan Periode Krs"},
+        selectors={"krs": {"select_control": "input", "submit": "button"}},
+    )
+    assert ok is False
+    assert "belum buka" in reason.lower()
+
+
+def test_preflight_blocks_missing_selectors(monkeypatch) -> None:
+    monkeypatch.setattr(config, "ALLOW_SUBMIT", True)
+    ok, reason = preflight_submit(
+        dry_run=False,
+        selected=[{"code": "IF2228", "sks": 3}],
+        period={"is_open": True},
+        selectors={"krs": {"select_control": None, "submit": None}},
+    )
+    assert ok is False
+    assert "select_control" in reason or "submit" in reason
+
+
+def test_preflight_passes_when_ready(monkeypatch) -> None:
+    monkeypatch.setattr(config, "ALLOW_SUBMIT", True)
+    ok, reason = preflight_submit(
+        dry_run=False,
+        selected=[{"code": "IF2228", "sks": 3}],
+        period={"is_open": True},
+        selectors={"krs": {"select_control": "input.chk", "submit": "input[type=submit]"}},
+    )
+    assert ok is True
+    assert "lulus" in reason.lower()

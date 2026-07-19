@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "source": "SIAKAD Universitas Trunojoyo Madura",
+    "filled_after": "M0 live DOM recon",
+    "notes": "Replace every TODO value after headed recon. Do not guess."
+  },
+  "login": {
+    "url": "https://siakad.trunojoyo.ac.id",
+    "username": "TODO_CSS_OR_ROLE_SELECTOR",
+    "password": "TODO_CSS_OR_ROLE_SELECTOR",
+    "submit": "TODO_CSS_OR_ROLE_SELECTOR",
+    "error": "TODO_CSS_OR_ROLE_SELECTOR",
+    "captcha": null,
+    "success_indicator": "TODO_SELECTOR_AFTER_LOGIN"
+  },
+  "nav": {
+    "krs": "TODO_MENU_OR_LINK_TO_KRS"
+  },
+  "krs": {
+    "url": "https://siakad.trunojoyo.ac.id/index.php?pModule=zabIzKI=&pSub=zabIzKI=&pAct=16DG2g==",
+    "course_rows": "TODO_ROW_SELECTOR",
+    "fields": {
+      "code": "TODO",
+      "name": "TODO",
+      "sks": "TODO",
+      "class_name": "TODO",
+      "schedule": "TODO",
+      "quota": "TODO"
+    },
+    "select_control": "TODO_CHECKBOX_OR_RADIO_OR_SELECT",
+    "submit": "TODO_SUBMIT_BUTTON",
+    "success_message": "TODO",
+    "error_message": "TODO",
+    "existing_rows": "TODO_EXISTING_KRS_ROWS"
+  }
+}
