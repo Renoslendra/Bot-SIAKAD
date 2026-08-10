@@ -15,6 +15,7 @@ from bot.config import (
     TARGET_SKS,
     USE_FALLBACK,
     ensure_runtime_dirs,
+    fallback_codes,
     load_selectors,
     priority_codes,
     require_credentials,
@@ -22,7 +23,12 @@ from bot.config import (
 )
 from bot.login import login_with_browser
 from bot.reporter import merge_submit_into_report, print_final_report, save_and_print_report
-from bot.scraper import scrape_existing_krs, scrape_offered_courses
+from bot.scraper import (
+    enrich_courses_with_schedules,
+    merge_schedule_cache,
+    scrape_existing_krs,
+    scrape_offered_courses,
+)
 from bot.selector import build_selection_report, select_courses
 from bot.submitter import preflight_submit, submit_selected_courses
 from bot.utils import get_logger, load_last_report, setup_logger
@@ -39,7 +45,65 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--headed", action="store_true", help="Paksa browser headed/GUI")
     parser.add_argument("--auto-confirm", action="store_true", help="Skip prompt konfirmasi submit")
     parser.add_argument("--run", action="store_true", help="Pipeline penuh (butuh ALLOW_SUBMIT=true)")
+    parser.add_argument(
+        "--refresh-schedules",
+        action="store_true",
+        help="Scrape ulang jadwal tiap kelas (lambat; abaikan cache)",
+    )
+
+    war = parser.add_argument_group("war mode")
+    war.add_argument(
+        "--war",
+        action="store_true",
+        help="Tunggu masa KRS dibuka lalu langsung pilih + submit",
+    )
+    war.add_argument(
+        "--at",
+        metavar="HH:MM",
+        help="Jam mulai war, contoh: --at 08:00",
+    )
+    war.add_argument(
+        "--lead",
+        type=int,
+        default=60,
+        help="Bangun N detik sebelum jam target (default: 60)",
+    )
+    war.add_argument(
+        "--interval",
+        type=float,
+        default=3.0,
+        help="Jeda antar polling dalam detik (default: 3.0)",
+    )
+    war.add_argument(
+        "--max-minutes",
+        type=float,
+        default=90.0,
+        help="Batas waktu polling dalam menit (default: 90)",
+    )
+    war.add_argument(
+        "--rounds",
+        type=int,
+        default=3,
+        help="Maksimum ronde submit ulang (default: 3)",
+    )
+    war.add_argument(
+        "--fallback",
+        action="store_true",
+        help="Izinkan MK fallback bila prioritas tidak cukup 23 SKS",
+    )
     return parser
+
+
+def parse_clock(value: str | None) -> Any:
+    if not value:
+        return None
+    from datetime import time as dtime
+
+    try:
+        hour_str, minute_str = value.strip().split(":")
+        return dtime(hour=int(hour_str), minute=int(minute_str))
+    except (ValueError, AttributeError):
+        raise SystemExit(f"Format --at tidak valid: {value!r}. Gunakan HH:MM, contoh 08:00")
 
 
 def resolve_runtime_flags(args: argparse.Namespace) -> dict[str, Any]:
@@ -67,6 +131,7 @@ def resolve_runtime_flags(args: argparse.Namespace) -> dict[str, Any]:
         "status_only": bool(args.status),
         "headless": headless,
         "auto_confirm": bool(args.auto_confirm) or AUTO_CONFIRM,
+        "refresh_schedules": bool(getattr(args, "refresh_schedules", False)),
     }
 
 
@@ -126,7 +191,26 @@ async def run_pipeline_async(flags: dict[str, Any]) -> int:
         existing = await scrape_existing_krs(page, save=True)
         offered = None
         try:
-            offered = await scrape_offered_courses(page, target_codes=priority_codes(), save=True)
+            codes = priority_codes() + (fallback_codes() if USE_FALLBACK else [])
+            offered = await scrape_offered_courses(page, target_codes=codes, save=True)
+
+            # Jadwal wajib ada agar bentrok terdeteksi. Pakai cache bila
+            # tersedia (cepat); jika tidak, scrape langsung (lambat).
+            if flags.get("refresh_schedules"):
+                offered = await enrich_courses_with_schedules(page, offered, save=True)
+            else:
+                offered = merge_schedule_cache(offered)
+                missing = sum(
+                    1
+                    for course in offered.get("courses", [])
+                    for cls in course.get("classes", [])
+                    if not cls.get("schedules")
+                )
+                if missing:
+                    log.warning(
+                        f"{missing} kelas tanpa jadwal — scrape langsung sebagai fallback"
+                    )
+                    offered = await enrich_courses_with_schedules(page, offered, save=True)
         except Exception as exc:
             log.warning(f"Scrape Informasi Matakuliah dilewati/gagal: {exc}")
 
@@ -202,6 +286,60 @@ def run_pipeline(flags: dict[str, Any]) -> int:
     return asyncio.run(run_pipeline_async(flags))
 
 
+def run_war_mode(args: argparse.Namespace, flags: dict[str, Any]) -> int:
+    from bot.war import run_war
+
+    log = get_logger("main")
+    ensure_runtime_dirs()
+
+    try:
+        require_credentials()
+        load_selectors()
+    except config.ConfigError as exc:
+        log.error(str(exc))
+        print(str(exc))
+        return 1
+
+    start_at = parse_clock(args.at)
+    use_fallback = True if args.fallback else USE_FALLBACK
+    allowed, reason = submit_allowed(dry_run=flags["dry_run"])
+
+    print("----------------------------------------")
+    print("Bot SIAKAD — WAR MODE")
+    print(f"Target SKS     : {TARGET_SKS}")
+    print(f"Mulai jam      : {args.at or 'sekarang'}")
+    print(f"Lead time      : {args.lead}s")
+    print(f"Polling        : tiap {args.interval}s (maks {args.max_minutes} menit)")
+    print(f"Ronde submit   : {args.rounds}")
+    print(f"USE_FALLBACK   : {use_fallback}")
+    print(f"ALLOW_SUBMIT   : {ALLOW_SUBMIT}")
+    print(f"HEADLESS       : {flags['headless']}")
+    print(f"DRY_RUN        : {flags['dry_run']}")
+    print(f"Submit allowed : {allowed} ({reason})")
+    print("----------------------------------------")
+
+    if not flags["dry_run"] and not ALLOW_SUBMIT:
+        print()
+        print("ALLOW_SUBMIT=false — war mode akan berhenti sebelum submit.")
+        print("Set ALLOW_SUBMIT=true di .env untuk submit sungguhan.")
+        return 1
+
+    return asyncio.run(
+        run_war(
+            headless=flags["headless"],
+            start_at=start_at,
+            lead_seconds=args.lead,
+            interval=args.interval,
+            max_minutes=args.max_minutes,
+            use_fallback=use_fallback,
+            target_sks=TARGET_SKS,
+            refresh_schedules=flags["refresh_schedules"],
+            max_rounds=args.rounds,
+            dry_run=flags["dry_run"],
+        )
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -210,6 +348,8 @@ def main(argv: list[str] | None = None) -> int:
     get_logger("main").info("Bot SIAKAD start")
     if flags["status_only"]:
         return print_status()
+    if args.war:
+        return run_war_mode(args, flags)
     return run_pipeline(flags)
 
 

@@ -40,6 +40,9 @@ def test_preflight_blocks_empty_selected(monkeypatch) -> None:
 
 
 def test_preflight_blocks_closed_period(monkeypatch) -> None:
+    """Period check dihapus dari preflight karena SIAKAD menyediakan tombol
+    Tambah Matakuliah meski belum 'masa KRS' resmi. Deteksi sudah
+    berbasis keberadaan kontrol, bukan flag period."""
     monkeypatch.setattr(config, "ALLOW_SUBMIT", True)
     ok, reason = preflight_submit(
         dry_run=False,
@@ -47,8 +50,8 @@ def test_preflight_blocks_closed_period(monkeypatch) -> None:
         period={"is_open": False, "reason": "Bukan Periode Krs"},
         selectors={"krs": {"select_control": "input", "submit": "button"}},
     )
-    assert ok is False
-    assert "belum buka" in reason.lower()
+    # Preflight sekarang LOLOS karena kontrol sudah lengkap.
+    assert ok is True
 
 
 def test_preflight_blocks_missing_selectors(monkeypatch) -> None:

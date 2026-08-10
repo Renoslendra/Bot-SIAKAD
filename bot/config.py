@@ -40,6 +40,7 @@ SCREENSHOTS_DIR = LOGS_DIR / "screenshots"
 RECON_DIR = LOGS_DIR / "recon"
 SESSION_PATH = LOGS_DIR / "session.json"
 SCRAPED_COURSES_PATH = LOGS_DIR / "scraped_courses.json"
+SCHEDULE_CACHE_PATH = LOGS_DIR / "schedule_cache.json"
 EXISTING_KRS_PATH = LOGS_DIR / "existing_krs.json"
 SELECTION_REPORT_PATH = LOGS_DIR / "selection_report.json"
 BOT_LOG_PATH = LOGS_DIR / "bot.log"
@@ -50,14 +51,14 @@ REQUEST_TIMEOUT = 30000
 ACTION_DELAY = 1.0
 
 PRIORITY_COURSES: list[dict[str, Any]] = [
-    {"code": "IF2228", "name": "Sistem Terdistribusi", "sks": 3},
-    {"code": "IF2229", "name": "Proyek Perangkat Lunak", "sks": 3},
-    {"code": "IF2230", "name": "Pembelajaran Mesin", "sks": 3},
-    {"code": "IF2231", "name": "Proyek Sains Data", "sks": 3},
-    {"code": "IF2232", "name": "Metodologi Penelitian", "sks": 2},
-    {"code": "IF2260", "name": "Pemodelan Proses Bisnis", "sks": 3},
-    {"code": "IF2254", "name": "Keamanan Data & Aplikasi", "sks": 3},
-    {"code": "IF2259", "name": "Pengolahan Citra", "sks": 3},
+    {"code": "IF2229", "name": "Proyek Perangkat Lunak", "sks": 3, "preferred_class": "IF 5A"},
+    {"code": "IF2231", "name": "Proyek Sains Data", "sks": 3, "preferred_class": "IF 5C"},
+    {"code": "IF2259", "name": "Pengolahan Citra", "sks": 3, "preferred_class": "IF 7B"},
+    {"code": "IF2258", "name": "Basis Data III", "sks": 3, "preferred_class": "IF 7A"},
+    {"code": "IF2230", "name": "Pembelajaran Mesin", "sks": 3, "preferred_class": "IF 5E"},
+    {"code": "IF2232", "name": "Metodologi Penelitian", "sks": 2, "preferred_class": "IF 5D"},
+    {"code": "IF2260", "name": "Pemodelan Proses Bisnis", "sks": 3, "preferred_class": "IF 7B"},
+    {"code": "IF2228", "name": "Sistem Terdistribusi", "sks": 3, "preferred_class": "IF 5C"},
 ]
 
 FALLBACK_COURSES: list[dict[str, Any]] = [

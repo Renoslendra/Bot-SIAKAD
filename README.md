@@ -1,645 +1,405 @@
 <div align="center">
 
-# 🏎️ BOT-SIAKAD
+# BOT-SIAKAD
 
-### ⚡ Auto Course Selection System ⚡
+### Auto KRS Selection & War Mode
 
-**SIAKAD Universitas Trunojoyo Madura**
+**SIAKAD Universitas Trunojoyo Madura — Semester 5, Target 23 SKS**
 
-*Engineered with Precision — BMW-M Design Language*
-
-<br/>
-
-<table>
-<tr>
-<td>
-
-![Python](https://img.shields.io/badge/Python-3.14+-000000?style=for-the-badge&logo=python&logoColor=white)
-![Flask](https://img.shields.io/badge/Flask-3.0.0-000000?style=for-the-badge&logo=flask&logoColor=white)
-![Playwright](https://img.shields.io/badge/Playwright-Automation-000000?style=for-the-badge&logo=playwright&logoColor=white)
-
-</td>
-<td>
-
-![Status](https://img.shields.io/badge/Status-Production_Ready-0fa336?style=for-the-badge&logo=rocket&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-38_Passed-1c69d4?style=for-the-badge&logo=pytest&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-000000?style=for-the-badge)
-
-</td>
-</tr>
-</table>
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+![Python](https://img.shields.io/badge/Python-3.11+-3776ab?style=flat-square&logo=python&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-Automation-2ead33?style=flat-square&logo=playwright&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-40_Passed-1c69d4?style=flat-square&logo=pytest&logoColor=white)
 
 </div>
 
-## 🎯 Overview
+---
 
-**BOT-SIAKAD** is an intelligent automation system designed to streamline course selection at SIAKAD Universitas Trunojoyo Madura. Built with cutting-edge technology and a premium BMW-M inspired dark interface, this bot handles everything from login to course submission with military-grade precision.
+## Apa Ini?
 
-### ✨ Key Features
+Bot otomatis untuk **war KRS** di SIAKAD UTM. Bot login, buka halaman KRS, centang mata kuliah yang sudah ditentukan, lalu submit — semua otomatis dalam hitungan detik.
 
-<table>
-<tr>
-<td width="50%">
+**Fitur utama:**
+- **War mode** — polling sampai KRS buka, lalu langsung serang
+- **Backtracking solver** — cari kombinasi kelas tanpa bentrok, bukan greedy
+- **Preferred class** — kamu tentukan kelas mana yang mau diambil, bot ikuti persis
+- **Auto-retry** — kalau gagal, coba lagi sampai 3 ronde
+- **Cache jadwal** — jadwal di-scrape sebelumnya supaya saat war tidak buang waktu
 
-🤖 **Smart Automation**
-- Auto-login to SIAKAD
-- Intelligent course scraping
-- Conflict-free schedule selection
-- Priority-based course allocation
+---
 
-</td>
-<td width="50%">
+## Target MK (23 SKS, 0 Bentrok)
 
-🛡️ **Safety First**
-- Multi-layer safety locks
-- Dry-run mode for testing
-- Configurable submit controls
-- Comprehensive error handling
+| Hari | Jam | Mata Kuliah | Kelas | SKS |
+|------|-----|-------------|-------|-----|
+| Senin | 09:30-12:00 | Proyek Perangkat Lunak | IF 5A | 3 |
+| Selasa | 09:30-12:00 | Proyek Sains Data | IF 5C | 3 |
+| Selasa | 13:00-15:30 | Pengolahan Citra | IF 7B | 3 |
+| Rabu | 07:00-09:30 | Basis Data III | IF 7A | 3 |
+| Rabu | 09:30-12:00 | Pembelajaran Mesin | IF 5E | 3 |
+| Kamis | 07:00-08:40 | Metodologi Penelitian | IF 5D | 2 |
+| Kamis | 09:30-12:00 | Pemodelan Proses Bisnis | IF 7B | 3 |
+| Kamis | 13:00-15:30 | Sistem Terdistribusi | IF 5C | 3 |
+| | | **TOTAL** | | **23** |
 
-</td>
-</tr>
-<tr>
-<td>
+---
 
-🎨 **Premium UI/UX**
-- BMW-M dark aesthetic
-- Real-time monitoring dashboard
-- Live console output
-- Responsive design
+## Instalasi (Pertama Kali)
 
-</td>
-<td>
-
-📊 **Advanced Reporting**
-- Detailed session logs
-- Success rate tracking
-- Error analytics
-- Export capabilities (CSV/JSON)
-
-</td>
-</tr>
-</table>
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## 🚀 Quick Start
-
-<div align="center">
-
-### Get up and running in **60 seconds**
-
-</div>
+### 1. Clone repo
 
 ```bash
-# 1️⃣ Clone the repository
-git clone https://github.com/yourusername/Bot-SIAKAD.git
+git clone https://github.com/renocrypt/Bot-SIAKAD.git
 cd Bot-SIAKAD
+```
 
-# 2️⃣ Create virtual environment
+### 2. Buat virtual environment & install dependencies
+
+```bash
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1  # Windows
-# source .venv/bin/activate   # Linux/Mac
 
-# 3️⃣ Install dependencies
+# Windows (CMD):
+.venv\Scripts\activate
+
+# Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+
+# Linux/Mac:
+source .venv/bin/activate
+```
+
+```bash
 pip install -r requirements.txt
 playwright install chromium
+```
 
-# 4️⃣ Configure environment
+### 3. Buat file `.env`
+
+Copy dari template:
+```bash
 copy .env.example .env
-# Edit .env with your SIAKAD credentials
+```
 
-# 5️⃣ Run your first dry-run
+Isi dengan kredensial SIAKAD kamu:
+```env
+SIAKAD_USERNAME=240411100020
+SIAKAD_PASSWORD=passwordkamu
+
+HEADLESS=false
+LOG_LEVEL=INFO
+AUTO_CONFIRM=true
+ALLOW_SUBMIT=true
+USE_FALLBACK=false
+```
+
+> **PENTING:** `ALLOW_SUBMIT=true` dan `AUTO_CONFIRM=true` harus di-set agar bot bisa submit otomatis.
+
+### 4. Verifikasi instalasi
+
+```bash
 python main.py --dry-run
 ```
 
-<br/>
+Harus muncul: `Status: SUCCESS` dan `Total SKS: 23 / 23`.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-## 📁 Project Structure
+## Panduan War KRS
+
+### Persiapan Malam Sebelumnya
+
+1. **Matikan auto-sleep laptop** — Settings > System > Power & Sleep > Sleep: **Never**
+2. **Pastikan laptop tercharger**
+3. **Test dry-run** untuk memastikan bot jalan:
+   ```bash
+   python main.py --dry-run --headed
+   ```
+
+### H-Day: Prosedur War
+
+#### Jam 07:25 — Buka Terminal
+
+```bash
+cd "C:\Users\renos\Downloads\github coding\Bot-SIAKAD"
+.venv\Scripts\activate
+```
+
+#### Jam 07:30 — Jalankan War Mode
+
+```bash
+python main.py --war --at 08:00 --headed
+```
+
+**Selesai.** Duduk dan pantau.
+
+#### Apa yang Terjadi:
+
+| Waktu | Bot Melakukan |
+|-------|---------------|
+| 07:30 | Login ke SIAKAD, load cache jadwal |
+| 07:30-07:59 | Tidur (menunggu jam target) |
+| 07:59 | Bangun, mulai polling halaman KRS tiap 3 detik |
+| 08:00 (KRS buka) | Klik "Tambah Matakuliah" |
+| +1 detik | Centang 8 checkbox MK |
+| +2 detik | Klik "Tambah" |
+| +3 detik | Verifikasi KRS, tampilkan hasil |
+| Kalau gagal | Retry otomatis (maks 3 ronde) |
+
+#### Hasil Sukses
+
+Di terminal akan muncul:
+```
+Status: SUCCESS
+Total SKS: 23 / 23
+```
+
+Cek juga di browser — halaman KRS harus menampilkan 8 MK kamu.
+
+---
+
+## CLI Reference
+
+### Mode Utama
+
+| Perintah | Fungsi |
+|----------|--------|
+| `python main.py --dry-run` | Test tanpa submit (aman) |
+| `python main.py --run --auto-confirm --headed` | Submit langsung tanpa war |
+| `python main.py --war --at 08:00 --headed` | War mode: tunggu jam 08:00 lalu serang |
+| `python main.py --status` | Lihat report terakhir |
+
+### Opsi War Mode
+
+| Flag | Default | Keterangan |
+|------|---------|------------|
+| `--at HH:MM` | sekarang | Jam mulai war |
+| `--led N` | 60 | Bangun N detik sebelum jam target |
+| `--interval N` | 3.0 | Jeda polling dalam detik |
+| `--max-minutes N` | 90 | Batas waktu polling |
+| `--rounds N` | 3 | Maksimum ronde retry submit |
+| `--fallback` | false | Izinkan MK cadangan kalau prioritas gagal |
+| `--headed` | - | Tampilkan browser (rekomendasi untuk war) |
+| `--headless` | - | Sembunyikan browser |
+| `--refresh-schedules` | - | Scrape ulang jadwal (lambat, abaikan cache) |
+
+### Utility Scripts
+
+```bash
+# Bangun cache jadwal (jalankan sebelum war)
+python scripts/build_schedule_cache.py
+
+# Simulasi selection tanpa browser
+python scripts/simulate_selection.py
+
+# Tampilkan jadwal dari cache
+python scripts/show_schedules.py
+
+# Recon mendalam halaman KRS
+python scripts/recon_krs_page.py
+```
+
+---
+
+## Struktur Proyek
 
 ```
 Bot-SIAKAD/
+├── bot/                        # Core automation
+│   ├── cli.py                  # CLI + war mode entry
+│   ├── config.py               # MK prioritas + preferred class
+│   ├── login.py                # Login SIAKAD (handle MD5 hash)
+│   ├── scraper.py              # Scrape KRS + jadwal kelas
+│   ├── selector.py             # Backtracking solver (bukan greedy)
+│   ├── submitter.py            # Submit KRS (alur 2-langkah)
+│   ├── autodetect.py           # Auto-detect checkbox/tombol submit
+│   ├── war.py                  # War mode: polling + auto-fire
+│   ├── reporter.py             # Report generation
+│   └── utils.py                # Jadwal parser, conflict check
 │
-├── 🤖 bot/                          # Core automation package
-│   ├── cli.py                       # Command-line interface
-│   ├── config.py                    # Configuration management
-│   ├── login.py                     # SIAKAD authentication
-│   ├── scraper.py                   # Data extraction engine
-│   ├── selector.py                  # Course selection logic
-│   ├── submitter.py                 # KRS submission handler
-│   ├── reporter.py                  # Report generation
-│   └── utils.py                     # Utility functions
+├── config/
+│   ├── selectors.json          # CSS selectors SIAKAD (dari recon)
+│   └── selectors.example.json  # Template
 │
-├── 🎨 ui/                           # BMW-M Dashboard Interface
-│   ├── server.py                    # Flask web server
-│   ├── templates/                   # HTML templates
-│   │   ├── base.html               # Base layout
-│   │   ├── dashboard.html          # Main dashboard
-│   │   ├── konfigurasi.html        # Settings page
-│   │   ├── mata_kuliah.html        # Course management
-│   │   ├── monitoring.html         # Real-time monitoring
-│   │   └── riwayat.html            # History & reports
-│   └── static/
-│       ├── css/style.css           # BMW-M design system
-│       └── js/app.js               # Interactive features
+├── scripts/
+│   ├── build_schedule_cache.py # Pre-build cache jadwal
+│   ├── simulate_selection.py   # Simulasi offline
+│   ├── show_schedules.py       # Tampilkan jadwal cache
+│   ├── recon.py                # Recon halaman SIAKAD
+│   └── recon_krs_page.py       # Recon detail halaman KRS
 │
-├── ⚙️ config/
-│   ├── selectors.example.json      # Template configuration
-│   └── selectors.json              # Active config (gitignored)
+├── ui/                         # Web dashboard (Flask)
+├── tests/                      # 40 pytest tests
+├── logs/                       # Runtime logs + screenshots
 │
-├── 📝 docs/                         # Documentation
-│   ├── PRD.md                      # Product requirements
-│   ├── Task.md                     # Task breakdown
-│   ├── Guideline.md                # Development guidelines
-│   ├── PREFLIGHT.md                # Pre-launch checklist
-│   └── flowchart.html              # System flowchart
-│
-├── 🔧 scripts/                      # Utility scripts
-│   ├── recon.py                    # Site reconnaissance
-│   └── check_semester5.py          # Semester 5 validator
-│
-├── 🧪 tests/                        # Test suite (38 tests)
-├── 📋 logs/                         # Runtime logs (gitignored)
-├── 🎯 hermes-skill/                 # Hermes integration
-│
-├── 📄 main.py                       # CLI entrypoint
-├── 📦 requirements.txt              # Python dependencies
-├── 🔐 .env.example                  # Environment template
-└── 📖 README.md                     # This file
+├── main.py                     # Entry point
+├── requirements.txt            # Dependencies
+├── .env                        # Kredensial (JANGAN commit)
+└── .env.example                # Template .env
 ```
 
-<br/>
+---
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## Cara Kerja Bot
 
-## 🎮 Usage
+### Alur SIAKAD (Hasil Recon)
 
-### CLI Commands
+```
+Login
+  ↓
+Halaman KRS
+  ↓
+Klik "Tambah Matakuliah" (btnProses)
+  ↓
+Halaman Daftar MK Ditawarkan
+  - 130 checkbox (kodeMkul[])
+  - Tabel: No | checkbox | Kelas | Mata Kuliah | Jadwal | SKS
+  ↓
+Centang checkbox MK yang dipilih
+  ↓
+Klik "Tambah" (btnAdd)
+  ↓
+Kembali ke Halaman KRS (MK sudah masuk)
+```
 
-<table>
-<thead>
-<tr>
-<th>Command</th>
-<th>Description</th>
-<th>Example</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--dry-run</code></td>
-<td>Test run without submission</td>
-<td><code>python main.py --dry-run</code></td>
-</tr>
-<tr>
-<td><code>--status</code></td>
-<td>Show last report</td>
-<td><code>python main.py --status</code></td>
-</tr>
-<tr>
-<td><code>--run</code></td>
-<td>Full pipeline with submit</td>
-<td><code>python main.py --run</code></td>
-</tr>
-<tr>
-<td><code>--auto-confirm</code></td>
-<td>Skip confirmation prompts</td>
-<td><code>python main.py --run --auto-confirm</code></td>
-</tr>
-<tr>
-<td><code>--headless</code></td>
-<td>Run browser in background</td>
-<td><code>python main.py --dry-run --headless</code></td>
-</tr>
-<tr>
-<td><code>--headed</code></td>
-<td>Show browser window</td>
-<td><code>python main.py --dry-run --headed</code></td>
-</tr>
-</tbody>
-</table>
+### Selection Engine
 
-### Web Dashboard
+Bot tidak pakai greedy first-fit (yang bisa gagal). Bot pakai **backtracking solver**:
 
-Launch the BMW-M inspired dashboard:
+1. Kumpulkan semua MK + kelas yang layak (ada kuota, ada jadwal)
+2. Urutkan preferred class ke depan
+3. Coba semua kombinasi, pangkas cabang mati (pruning)
+4. Pilih kombinasi dengan SKS tertinggi + prioritas terbaik
+5. Jamin 0 bentrok jadwal
+
+### Cache Jadwal
+
+Jadwal kelas di-scrape dari halaman detail (40 halaman) dan disimpan ke `logs/schedule_cache.json`. Saat war, bot pakai cache ini supaya tidak perlu buka 40 halaman — hemat ~2 menit.
+
+---
+
+## Konfigurasi MK
+
+MK dan kelas yang diambil didefinisikan di `bot/config.py`:
+
+```python
+PRIORITY_COURSES = [
+    {"code": "IF2229", "name": "Proyek Perangkat Lunak", "sks": 3, "preferred_class": "IF 5A"},
+    {"code": "IF2231", "name": "Proyek Sains Data",      "sks": 3, "preferred_class": "IF 5C"},
+    {"code": "IF2259", "name": "Pengolahan Citra",        "sks": 3, "preferred_class": "IF 7B"},
+    {"code": "IF2258", "name": "Basis Data III",          "sks": 3, "preferred_class": "IF 7A"},
+    {"code": "IF2230", "name": "Pembelajaran Mesin",      "sks": 3, "preferred_class": "IF 5E"},
+    {"code": "IF2232", "name": "Metodologi Penelitian",   "sks": 2, "preferred_class": "IF 5D"},
+    {"code": "IF2260", "name": "Pemodelan Proses Bisnis", "sks": 3, "preferred_class": "IF 7B"},
+    {"code": "IF2228", "name": "Sistem Terdistribusi",    "sks": 3, "preferred_class": "IF 5C"},
+]
+```
+
+Kalau mau ganti kelas, edit `preferred_class`. Kalau preferred penuh/bentrok, bot otomatis pilih kelas alternatif.
+
+---
+
+## Troubleshooting
+
+<details>
+<summary><b>Bot gagal login</b></summary>
+
+- Cek username/password di `.env`
+- Pastikan SIAKAD bisa diakses manual di browser
+- Coba `python main.py --dry-run --headed` untuk lihat browser
+
+</details>
+
+<details>
+<summary><b>"KRS belum terbuka" terus menerus</b></summary>
+
+- Masa KRS memang belum dibuka, bot polling terus otomatis
+- Pastikan `--max-minutes` cukup besar (default 90 menit)
+- Kalau sudah lewat 90 menit, restart bot
+
+</details>
+
+<details>
+<summary><b>MK tidak tercentang / checkbox not found</b></summary>
+
+- Nama MK di SIAKAD mungkin beda sedikit dari config
+- Jalankan `python scripts/recon_krs_page.py` untuk lihat daftar MK terbaru
+- Update `bot/config.py` sesuai nama persis di SIAKAD
+
+</details>
+
+<details>
+<summary><b>Internet putus di tengah war</b></summary>
+
+- Jalankan ulang: `python main.py --war --headed`
+- Bot akan login ulang dan lanjut dari awal
+
+</details>
+
+<details>
+<summary><b>Mau submit manual saja</b></summary>
+
+- Buka SIAKAD di browser biasa
+- Halaman KRS > Tambah Matakuliah > centang manual > Tambah
+
+</details>
+
+---
+
+## Testing
 
 ```bash
-cd ui
-python server.py
+# Jalankan semua test (harus 40 pass)
+python -m pytest -q
+
+# Test selection engine saja
+python -m pytest tests/test_selection.py -v
+
+# Simulasi selection dengan data live
+python scripts/simulate_selection.py
 ```
 
-Access at: **http://localhost:5000**
+---
 
-<div align="center">
+## Requirements
 
-**Features:**
-🎯 Real-time bot control • 📊 Live monitoring • ⚙️ Configuration management • 📚 Course priority setup • 📈 Analytics & reports
+- Python 3.11+
+- Windows / Linux / macOS
+- Internet stabil
+- Akun SIAKAD aktif
 
-</div>
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## 🛡️ Safety Protocol
-
-<div align="center">
-
-### ⚠️ CRITICAL: Read Before Production Use
-
-</div>
-
-<table>
-<tr>
-<td width="100%">
-
-**Default Safety Settings:**
-
-```env
-ALLOW_SUBMIT=false      # 🔒 Submission disabled by default
-USE_FALLBACK=false      # 🔒 Fallback courses disabled
+Dependencies:
+```
+playwright>=1.40.0
+python-dotenv>=1.0.0
+loguru>=0.7.0
+pytest>=8.0.0
 ```
 
-</td>
-</tr>
-</table>
+---
 
-### Safety Checklist
-
-- [ ] **Step 1:** Run `--dry-run` to verify configuration
-- [ ] **Step 2:** Review `logs/selection_report.json`
-- [ ] **Step 3:** Confirm all courses are correct
-- [ ] **Step 4:** Set `ALLOW_SUBMIT=true` ONLY when ready
-- [ ] **Step 5:** Run with `--run --auto-confirm`
-- [ ] **Step 6:** Verify on SIAKAD website
-- [ ] **Step 7:** **IMMEDIATELY** set `ALLOW_SUBMIT=false`
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## 🎨 BMW-M Design System
-
-The UI follows the prestigious **BMW M Design Language**:
-
-<table>
-<tr>
-<td width="33%">
-
-### 🎨 Color Palette
-
-```css
-Canvas:        #000000
-Surface:       #1a1a1a
-M Blue Light:  #0066b1
-M Blue Dark:   #1c69d4
-M Red:         #e22718
-```
-
-</td>
-<td width="33%">
-
-### 📐 Design Principles
-
-- **Zero border-radius** (industrial precision)
-- **Uppercase typography** (bold statements)
-- **M Tricolor accents** (brand signature)
-- **Dark premium aesthetic** (motorsport heritage)
-
-</td>
-<td width="33%">
-
-### ⚡ Features
-
-- Real-time status updates
-- Live console monitoring
-- Responsive design
-- Toast notifications
-- Modal interactions
-
-</td>
-</tr>
-</table>
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## 📊 System Status
-
-<table>
-<thead>
-<tr>
-<th>Component</th>
-<th>Status</th>
-<th>Details</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Core Package</td>
-<td>✅ <strong>Ready</strong></td>
-<td>38 tests passed</td>
-</tr>
-<tr>
-<td>Login Module</td>
-<td>✅ <strong>Ready</strong></td>
-<td>Authenticated scraping</td>
-</tr>
-<tr>
-<td>Selection Engine</td>
-<td>✅ <strong>Ready</strong></td>
-<td>Priority-based allocation</td>
-</tr>
-<tr>
-<td>Submit Module</td>
-<td>✅ <strong>Ready</strong></td>
-<td>Safety-locked by default</td>
-</tr>
-<tr>
-<td>Web Dashboard</td>
-<td>✅ <strong>Ready</strong></td>
-<td>BMW-M design complete</td>
-</tr>
-<tr>
-<td>Semester 5 List</td>
-<td>⚠️ <strong>Partial</strong></td>
-<td>Run check script</td>
-</tr>
-<tr>
-<td>Production Submit</td>
-<td>🔒 <strong>Locked</strong></td>
-<td>Until KRS period opens</td>
-</tr>
-</tbody>
-</table>
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## 🔧 Configuration
-
-### Environment Variables
-
-```env
-# SIAKAD Credentials
-SIAKAD_USERNAME=your_nim_here
-SIAKAD_PASSWORD=your_password_here
-
-# Safety Controls
-ALLOW_SUBMIT=false
-USE_FALLBACK=false
-
-# Browser Settings
-HEADLESS=true
-TIMEOUT=30000
-```
-
-### Course Priority Setup
-
-Edit `config/selectors.json`:
-
-```json
-{
-  "priority_courses": [
-    {"code": "CS5001", "name": "Algoritma & Pemrograman", "sks": 3},
-    {"code": "CS5002", "name": "Struktur Data", "sks": 4},
-    {"code": "CS5003", "name": "Basis Data", "sks": 3}
-  ],
-  "fallback_courses": [
-    {"code": "CS5009", "name": "Matematika Diskrit", "sks": 3}
-  ],
-  "target_sks": 23
-}
-```
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## 🧪 Testing
-
-Run the comprehensive test suite:
+## Ringkasan Perintah untuk War Besok
 
 ```bash
-# Run all tests
-pytest tests/ -v
+# 1. Buka terminal di folder Bot-SIAKAD
+cd "C:\Users\renos\Downloads\github coding\Bot-SIAKAD"
 
-# Run with coverage
-pytest tests/ --cov=bot --cov-report=html
+# 2. Aktifkan virtual environment
+.venv\Scripts\activate
 
-# Run specific test file
-pytest tests/test_selector.py -v
+# 3. (Opsional) Verifikasi dulu
+python main.py --dry-run
+
+# 4. Jalankan war mode
+python main.py --war --at 08:00 --headed
+
+# 5. Duduk, pantau browser, tunggu "Status: SUCCESS"
 ```
 
-**Test Coverage:**
-- ✅ Login authentication
-- ✅ Course scraping
-- ✅ Schedule conflict detection
-- ✅ Priority selection
-- ✅ Safety mechanisms
-- ✅ Error handling
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## 📚 Documentation
+---
 
 <div align="center">
 
-<table>
-<tr>
-<td>
+**Bot-SIAKAD** — Auto KRS Universitas Trunojoyo Madura
 
-### 📋 [PRD.md](docs/PRD.md)
-Product Requirements Document
-
-</td>
-<td>
-
-### 🎯 [Task.md](docs/Task.md)
-Task Breakdown & Progress
-
-</td>
-</tr>
-<tr>
-<td>
-
-### 📖 [Guideline.md](docs/Guideline.md)
-Development Guidelines
-
-</td>
-<td>
-
-### ✅ [PREFLIGHT.md](docs/PREFLIGHT.md)
-Pre-Launch Checklist
-
-</td>
-</tr>
-</table>
-
-### 🔄 [flowchart.html](docs/flowchart.html)
-Interactive System Flowchart
-
-</div>
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/AmazingFeature`)
-3. **Commit** your changes (`git commit -m 'Add AmazingFeature'`)
-4. **Push** to the branch (`git push origin feature/AmazingFeature`)
-5. **Open** a Pull Request
-
-### Development Setup
-
-```bash
-# Install dev dependencies
-pip install -r requirements.txt
-pip install pytest pytest-cov black flake8
-
-# Run code quality checks
-black bot/ ui/
-flake8 bot/ ui/
-pytest tests/ -v
-```
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## 📝 Changelog
-
-### v1.0.0 (2026-01-19)
-
-- ✅ Complete BMW-M dashboard UI
-- ✅ Real-time monitoring system
-- ✅ Course priority management
-- ✅ Session history & analytics
-- ✅ CSV/JSON export functionality
-- ✅ Enhanced security (CSRF, rate limiting, password hashing)
-- ✅ Responsive mobile design
-- ✅ 38 passing tests
-
-### v0.9.0 (2026-01-18)
-
-- ✅ Core automation engine
-- ✅ SIAKAD login module
-- ✅ Course scraper
-- ✅ Conflict-free selector
-- ✅ Safety-locked submitter
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## 🐛 Troubleshooting
-
-<details>
-<summary><strong>Login fails with "Invalid credentials"</strong></summary>
-
-- Verify credentials in `.env`
-- Check SIAKAD website is accessible
-- Ensure no CAPTCHA is required
-- Review `logs/console.json` for details
-
-</details>
-
-<details>
-<summary><strong>No courses found during scraping</strong></summary>
-
-- Run `python scripts/recon.py` to update selectors
-- Verify semester is active on SIAKAD
-- Check `config/selectors.json` is up to date
-
-</details>
-
-<details>
-<summary><strong>Dashboard shows "IDLE" status</strong></summary>
-
-- Start the bot: `python main.py --dry-run`
-- Check if server is running: `cd ui && python server.py`
-- Verify API endpoint: `http://localhost:5000/api/status`
-
-</details>
-
-<details>
-<summary><strong>Course selection fails with conflicts</strong></summary>
-
-- Review schedule in `logs/selection_report.json`
-- Adjust priority in `config/selectors.json`
-- Enable fallback courses if needed
-
-</details>
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-<div align="center">
-
-### 🏎️ Built with Precision. Engineered for Excellence.
-
-**BOT-SIAKAD** — Where Automation Meets Art
-
-<br/>
-
-<table>
-<tr>
-<td>
-
-**Made with ❤️ by**
-
-Renos
-
-</td>
-<td>
-
-**Powered by**
-
-🐍 Python • 🌶️ Flask • 🎭 Playwright
-
-</td>
-<td>
-
-**Designed with**
-
-🏎️ BMW-M Aesthetic
-
-</td>
-</tr>
-</table>
-
-<br/>
-
-**⭐ Star this repo if you find it useful! ⭐**
-
-<br/>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-<sub>© 2026 Bot-SIAKAD | Universitas Trunojoyo Madura</sub>
+Made by Reno Syaelendra | 240411100020 | Teknik Informatika
 
 </div>

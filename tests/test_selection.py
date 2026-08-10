@@ -265,6 +265,77 @@ def test_not_found_course() -> None:
     assert any(s["reason"] == "not_found_in_available" for s in result["skipped"])
 
 
+def test_backtracks_when_greedy_choice_blocks_later_course() -> None:
+    """Greedy first-fit gagal di sini; engine harus mundur dan pilih ulang kelas.
+
+    IF2231 punya banyak kelas, salah satunya bentrok dengan satu-satunya
+    kelas IF2254. Greedy mengambil kelas bentrok itu lebih dulu lalu
+    kehilangan IF2254. Solusi valid ada: IF2231 pindah ke slot lain.
+    """
+    available = [
+        _mk(
+            "IF2231",
+            "Proyek Sains Data",
+            3,
+            [
+                _cls("A", "Selasa 09:30-12:00"),
+                _cls("B", "Rabu 13:00-15:30"),
+            ],
+        ),
+        _mk("IF2254", "Keamanan Data", 3, [_cls("A", "Selasa 09:30-12:00")]),
+    ]
+    priority = [
+        {"code": "IF2231", "name": "Proyek Sains Data", "sks": 3},
+        {"code": "IF2254", "name": "Keamanan Data", "sks": 3},
+    ]
+    result = select_courses(
+        available,
+        existing_courses=[],
+        priority=priority,
+        fallback=[],
+        target_sks=6,
+        use_fallback=False,
+        period_open=True,
+    )
+    assert result["total_sks"] == 6
+    assert result["status"] == "SUCCESS"
+    assert {c["code"] for c in result["selected"]} == {"IF2231", "IF2254"}
+    picked = {c["code"]: c["class_name"] for c in result["selected"]}
+    assert picked["IF2231"] == "B"
+    assert picked["IF2254"] == "A"
+
+
+def test_backtracking_maximizes_sks_across_many_courses() -> None:
+    """Scarcity-aware: MK dengan sedikit kelas harus diamankan lebih dulu."""
+    available = [
+        _mk(
+            "IF2229",
+            "Proyek PL",
+            3,
+            [_cls("A", "Senin 09:30-12:00"), _cls("B", "Kamis 09:30-12:00")],
+        ),
+        _mk("IF2260", "Pemodelan", 3, [_cls("A", "Kamis 09:30-12:00")]),
+        _mk("IF2257", "Game", 3, [_cls("A", "Senin 09:30-12:00")]),
+    ]
+    priority = [
+        {"code": "IF2229", "name": "Proyek PL", "sks": 3},
+        {"code": "IF2260", "name": "Pemodelan", "sks": 3},
+        {"code": "IF2257", "name": "Game", "sks": 3},
+    ]
+    result = select_courses(
+        available,
+        existing_courses=[],
+        priority=priority,
+        fallback=[],
+        target_sks=9,
+        use_fallback=False,
+        period_open=True,
+    )
+    # Hanya 6 SKS yang mungkin: IF2260 dan IF2257 saling mengunci slot IF2229.
+    assert result["total_sks"] == 6
+    assert len(result["selected"]) == 2
+
+
 def test_no_double_enroll_same_code_in_available_only() -> None:
     available = [
         _mk(
