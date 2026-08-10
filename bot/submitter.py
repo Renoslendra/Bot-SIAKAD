@@ -105,17 +105,17 @@ async def _navigate_to_tambah_mk(
     await asyncio.sleep(ACTION_DELAY)
 
 
-async def _build_checkbox_map(page: Page) -> dict[tuple[str, str], str]:
-    """Peta (kode_mk, kelas) -> value checkbox dari halaman daftar MK ditawarkan.
+async def _build_checkbox_map(page: Page) -> list[dict[str, Any]]:
+    """Ambil semua baris MK dari halaman daftar MK ditawarkan.
 
-    Tabel: No | checkbox | Kelas | Mata Kuliah | Jadwal Kuliah | ... | Sks
-    Kode MK harus diekstrak dari kolom Mata Kuliah (format "Nama MK" tanpa kode)
-    atau dari kolom Kelas (yang berisi kode prodi). Ternyata kode MK TIDAK ada
-    di tabel ini — hanya nama MK. Jadi kita cocokkan via nama MK.
+    Tabel: No | checkbox | Kelas | Mata Kuliah | Jadwal | Jadwal Ujian | Sks | Ket
+    Checkbox punya class 'mkkurid-XXXXX' (kode MK stabil) dan tersembunyi
+    (di tabel accordion). Kode MK numerik SIAKAD ada di class tersebut,
+    bukan di kolom tabel.
     """
     return await page.evaluate(
         """() => {
-            const map = {};
+            const out = [];
             const tables = document.querySelectorAll('table.table-common');
             for (const table of tables) {
                 for (const tr of table.querySelectorAll('tr')) {
@@ -123,82 +123,113 @@ async def _build_checkbox_map(page: Page) -> dict[tuple[str, str], str]:
                     if (tds.length < 7) continue;
                     const cb = tds[1].querySelector("input[type='checkbox']");
                     if (!cb) continue;
-                    const kelas = (tds[2].innerText || '').trim();
-                    const namaMK = (tds[3].innerText || '').trim();
-                    const jadwal = (tds[4].innerText || '').trim();
-                    const sks = (tds[6].innerText || '').trim();
-                    map[kelas + '|' + namaMK] = {
+                    out.push({
                         value: cb.value,
-                        kelas, namaMK, jadwal, sks,
-                    };
+                        cbClass: cb.className || '',
+                        kelas: (tds[2].innerText || '').trim(),
+                        namaMK: (tds[3].innerText || '').trim(),
+                        jadwal: (tds[4].innerText || '').trim(),
+                        sks: (tds[6].innerText || '').trim(),
+                    });
                 }
             }
-            return map;
+            return out;
         }"""
     )
 
 
 def _normalize(text: str) -> str:
-    return re.sub(r"[^a-z0-9]", "", text.lower())
+    return re.sub(r"[^a-z0-9]", "", str(text).lower())
+
+
+def find_checkbox_match(
+    course: dict[str, Any],
+    rows: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    """Cari baris checkbox yang cocok KETAT untuk sebuah MK terpilih.
+
+    Match ketat: nama MK PERSIS sama (setelah normalisasi) DAN kelas PERSIS
+    sama. Mencegah salah ambil MK yang namanya mirip, mis.
+    'Proyek Sain Data' vs 'Proyek Perangkat Lunak' (dua-duanya mengandung
+    kata 'Proyek').
+    """
+    name_norm = _normalize(course.get("name") or "")
+    class_norm = _normalize(course.get("class_name") or "")
+    if not name_norm or not class_norm:
+        return None
+    for row in rows:
+        if _normalize(row.get("namaMK", "")) == name_norm and \
+                _normalize(row.get("kelas", "")) == class_norm:
+            return row
+    return None
 
 
 async def _check_selected_courses(
     page: Page,
     selected: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Centang checkbox untuk setiap MK terpilih, return list yang berhasil dicentang."""
+    """Centang checkbox untuk setiap MK terpilih.
+
+    Matching KETAT: nama MK harus PERSIS sama (setelah normalisasi) DAN
+    kelas harus PERSIS sama. Ini mencegah salah ambil MK yang namanya
+    mirip (mis. 'Proyek Sain Data' vs 'Proyek Perangkat Lunak').
+
+    Checkbox tersembunyi + punya onclick='exclusiveCheck(...)', jadi harus
+    di-set via JS lalu trigger event, bukan Playwright .check() (yang timeout
+    karena elemen not visible).
+    """
     log = get_logger("submitter")
-    checkbox_map = await _build_checkbox_map(page)
+    rows = await _build_checkbox_map(page)
 
     matched: list[dict[str, Any]] = []
     for course in selected:
         code = str(course.get("code") or "").upper()
         name = str(course.get("name") or "")
-        class_name = str(course.get("class_name") or "")
-        sks = str(course.get("sks") or "")
+        class_name = str(course.get("class_name") or "").strip()
 
-        # Cari checkbox yang cocok: match kelas + nama MK
-        cb_value = None
-        for key, info in checkbox_map.items():
-            kelas_part = info["kelas"]
-            nama_part = info["namaMK"]
+        # Match KETAT: nama persis + kelas persis
+        candidate = find_checkbox_match(course, rows)
 
-            # Match via kelas
-            if class_name and kelas_part == class_name:
-                # Verifikasi nama MK mirip
-                if _normalize(name) in _normalize(nama_part) or _normalize(nama_part) in _normalize(name):
-                    cb_value = info["value"]
-                    log.info(f"Match: {code} {class_name} -> '{nama_part}' kelas '{kelas_part}'")
-                    break
-
-        if not cb_value:
-            # Fallback: match hanya nama MK + SKS
-            for key, info in checkbox_map.items():
-                if _normalize(name) in _normalize(info["namaMK"]) or _normalize(info["namaMK"]) in _normalize(name):
-                    if info["sks"] == sks and info["kelas"] == class_name:
-                        cb_value = info["value"]
-                        log.info(f"Match (fallback): {code} -> '{info['namaMK']}' kelas '{info['kelas']}'")
-                        break
-
-        if not cb_value:
-            log.warning(f"{code} kelas {class_name} '{name}': checkbox tidak ditemukan")
+        if not candidate:
+            log.warning(
+                f"{code} '{name}' kelas {class_name}: checkbox tidak ditemukan "
+                f"(match ketat gagal)"
+            )
             continue
 
-        # Centang checkbox
-        selector = f"input[type='checkbox'][value='{cb_value}']"
-        checkbox = page.locator(selector).first
-        if await checkbox.count() == 0:
-            log.warning(f"{code}: checkbox value '{cb_value[:20]}...' tidak ada di DOM")
-            continue
+        cb_value = candidate["value"]
+        # Centang via JS: set checked=true lalu panggil onclick handler
+        # (exclusiveCheck) supaya SIAKAD memproses seleksi eksklusif kelas.
+        ok = await page.evaluate(
+            """(value) => {
+                const cbs = document.querySelectorAll("input[type='checkbox'][name='kodeMkul[]']");
+                for (const cb of cbs) {
+                    if (cb.value !== value) continue;
+                    if (!cb.checked) {
+                        cb.checked = true;
+                        // Trigger onclick handler (exclusiveCheck) bila ada
+                        if (typeof cb.onclick === 'function') {
+                            try { cb.onclick(); } catch (e) {}
+                        }
+                        cb.dispatchEvent(new Event('change', {bubbles: true}));
+                    }
+                    return cb.checked === true;
+                }
+                return false;
+            }""",
+            cb_value,
+        )
 
-        if not await checkbox.is_checked():
-            await checkbox.check()
-            log.info(f"{code} kelas {class_name}: dicentang")
+        if ok:
+            matched.append(course)
+            log.info(
+                f"{code} '{candidate['namaMK']}' kelas {candidate['kelas']}: "
+                f"dicentang ({candidate['jadwal']})"
+            )
         else:
-            log.info(f"{code} kelas {class_name}: sudah tercentang")
+            log.warning(f"{code} kelas {class_name}: gagal set checkbox (checked=false)")
 
-        matched.append(course)
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(0.15)
 
     return matched
 
@@ -283,14 +314,28 @@ async def submit_selected_courses(
                 if err_text and any(w in err_text.lower() for w in ("gagal", "error", "tidak")):
                     raise SubmitError(f"SIAKAD error: {err_text}")
 
-            # Step 5: Verifikasi
+            # Step 5: Verifikasi — cocokkan by kode ATAU nama MK.
+            # Halaman pilih MK tidak menampilkan kode, sementara tabel KRS
+            # existing menampilkan kode. Verifikasi berdasar nama lebih tahan
+            # bila format kode berbeda.
             verified = await scrape_existing_krs(page, selectors=data, save=True)
+            verified_courses = verified.get("courses") or []
             verified_codes = {
-                str(item.get("code", "")).upper()
-                for item in (verified.get("courses") or [])
+                str(item.get("code", "")).upper() for item in verified_courses
             }
+            verified_names = {
+                _normalize(item.get("name", "")) for item in verified_courses
+            }
+
+            missing = []
+            for course in matched:
+                code = str(course.get("code") or "").upper()
+                name_norm = _normalize(course.get("name") or "")
+                in_krs = code in verified_codes or name_norm in verified_names
+                if not in_krs:
+                    missing.append(code)
+
             submitted_codes = [str(c.get("code") or "").upper() for c in matched]
-            missing = [code for code in submitted_codes if code not in verified_codes]
 
             result = {
                 "timestamp": datetime.now().isoformat(timespec="seconds"),

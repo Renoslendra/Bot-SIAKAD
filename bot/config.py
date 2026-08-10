@@ -52,7 +52,7 @@ ACTION_DELAY = 1.0
 
 PRIORITY_COURSES: list[dict[str, Any]] = [
     {"code": "IF2229", "name": "Proyek Perangkat Lunak", "sks": 3, "preferred_class": "IF 5A"},
-    {"code": "IF2231", "name": "Proyek Sains Data", "sks": 3, "preferred_class": "IF 5C"},
+    {"code": "IF2231", "name": "Proyek Sain Data", "sks": 3, "preferred_class": "IF 5C"},
     {"code": "IF2259", "name": "Pengolahan Citra", "sks": 3, "preferred_class": "IF 7B"},
     {"code": "IF2258", "name": "Basis Data III", "sks": 3, "preferred_class": "IF 7A"},
     {"code": "IF2230", "name": "Pembelajaran Mesin", "sks": 3, "preferred_class": "IF 5E"},

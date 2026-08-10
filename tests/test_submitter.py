@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from bot import config
-from bot.submitter import preflight_submit
+from bot.submitter import find_checkbox_match, preflight_submit
 
 
 def test_preflight_blocks_dry_run() -> None:
@@ -76,3 +76,35 @@ def test_preflight_passes_when_ready(monkeypatch) -> None:
     )
     assert ok is True
     assert "lulus" in reason.lower()
+
+
+def test_checkbox_match_requires_exact_course_name_and_class() -> None:
+    rows = [
+        {
+            "value": "perangkat",
+            "namaMK": "Proyek Perangkat Lunak",
+            "kelas": "IF 5C",
+        },
+        {
+            "value": "sain-data",
+            "namaMK": "Proyek Sain Data",
+            "kelas": "IF 5C",
+        },
+    ]
+
+    match = find_checkbox_match(
+        {"name": "Proyek Sain Data", "class_name": "IF 5C"}, rows
+    )
+
+    assert match is not None
+    assert match["value"] == "sain-data"
+
+
+def test_checkbox_match_normalizes_class_spacing() -> None:
+    match = find_checkbox_match(
+        {"name": "Basis Data III", "class_name": "IF 7A"},
+        [{"value": "basis-data", "namaMK": "Basis Data III", "kelas": "IF  7A"}],
+    )
+
+    assert match is not None
+    assert match["value"] == "basis-data"
