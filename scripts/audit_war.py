@@ -131,6 +131,22 @@ async def main():
             await browser.close()
             return
 
+        # ========== AUDIT 4B: BUKA PAKET SEMESTER 5 ==========
+        print("\nAUDIT 4B: BUKA PAKET SEMESTER 5")
+        semester_5 = page.locator("#semester_5").first
+        toggle_5 = page.locator("a:has-text('Paket Semester 5')").first
+        try:
+            if not await semester_5.is_visible():
+                await toggle_5.click()
+                await semester_5.wait_for(state="visible")
+            passed.append("Paket Semester 5 dibuka")
+            print("  [OK] Accordion Paket Semester 5 terbuka")
+        except Exception as exc:
+            issues.append(f"Paket Semester 5 gagal dibuka: {exc}")
+            print(f"  [FAIL] {exc}")
+            await browser.close()
+            return
+
         # ========== AUDIT 5: HITUNG CHECKBOX ==========
         print("\nAUDIT 5: CHECKBOX")
         cb_count = await page.locator("input[type='checkbox'][name='kodeMkul[]']").count()

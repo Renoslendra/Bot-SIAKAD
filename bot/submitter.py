@@ -105,6 +105,30 @@ async def _navigate_to_tambah_mk(
     await asyncio.sleep(ACTION_DELAY)
 
 
+async def _open_semester_5(page: Page, selectors: dict[str, Any]) -> None:
+    """Buka accordion Paket Semester 5 sebelum memilih kelas target.
+
+    Checkbox MK Semester 5 berada dalam ``#semester_5`` yang disembunyikan
+    dengan Prototype Effect.toggle(). Submit sebelumnya dapat menandai input
+    tersembunyi, tetapi flow browser yang benar adalah membuka paket dulu.
+    """
+    krs = selectors.get("krs") or {}
+    container_sel = krs.get("semester_5_container") or "#semester_5"
+    toggle_sel = krs.get("semester_5_toggle") or "a:has-text('Paket Semester 5')"
+    container = page.locator(container_sel).first
+
+    if await container.count() == 0:
+        raise SubmitError("Container Paket Semester 5 tidak ditemukan")
+    if await container.is_visible():
+        return
+
+    toggle = page.locator(toggle_sel).first
+    if await toggle.count() == 0:
+        raise SubmitError("Tombol Paket Semester 5 tidak ditemukan")
+    await toggle.click()
+    await container.wait_for(state="visible")
+
+
 async def _build_checkbox_map(page: Page) -> list[dict[str, Any]]:
     """Ambil semua baris MK dari halaman daftar MK ditawarkan.
 
@@ -162,6 +186,35 @@ def find_checkbox_match(
                 _normalize(row.get("kelas", "")) == class_norm:
             return row
     return None
+
+
+def parse_submit_feedback(body: str) -> dict[str, Any]:
+    """Ekstrak hasil per-MK dari halaman respons submit SIAKAD."""
+    successful: list[str] = []
+    failed: list[dict[str, str]] = []
+    section = ""
+
+    for line in body.splitlines():
+        text = " ".join(line.split())
+        lower = text.lower()
+        if "mata kuliah yang berhasil diambil" in lower:
+            section = "successful"
+            continue
+        if "mata kuliah yang tidak berhasil diambil" in lower:
+            section = "failed"
+            continue
+
+        match = re.match(r"(IF\d{4})\s*-\s*(.+)", text, re.IGNORECASE)
+        if not match:
+            continue
+        code, detail = match.groups()
+        code = code.upper()
+        if section == "successful":
+            successful.append(code)
+        elif section == "failed":
+            failed.append({"code": code, "reason": detail})
+
+    return {"successful": successful, "failed": failed}
 
 
 async def _check_selected_courses(
@@ -281,6 +334,7 @@ async def submit_selected_courses(
             # Step 1: Navigasi ke KRS dan klik "Tambah Matakuliah"
             await navigate_to_krs(page, data)
             await _navigate_to_tambah_mk(page, data)
+            await _open_semester_5(page, data)
 
             step2 = screenshot_path("submitter", f"tambah_mk_page_{attempt}")
             await page.screenshot(path=str(step2), full_page=True)
@@ -307,7 +361,9 @@ async def submit_selected_courses(
             await page.screenshot(path=str(after), full_page=True)
 
             # Step 4: Cek error
-            body = " ".join((await page.locator("body").inner_text()).split()).lower()
+            raw_body = await page.locator("body").inner_text()
+            body = " ".join(raw_body.split()).lower()
+            feedback = parse_submit_feedback(raw_body)
             error_sel = krs.get("error_message") or "#warning"
             if await page.locator(error_sel).count() > 0:
                 err_text = " ".join((await page.locator(error_sel).inner_text()).split())
@@ -345,7 +401,8 @@ async def submit_selected_courses(
                     {"code": str(c.get("code")), "reason": "checkbox_not_found"}
                     for c in selected
                     if c not in matched
-                ],
+                ] + feedback["failed"],
+                "successful_feedback": feedback["successful"],
                 "missing_after_verify": missing,
                 "period": period,
                 "screenshots": {
@@ -358,6 +415,8 @@ async def submit_selected_courses(
                 "allow_submit": True,
             }
             log.info(f"Submit selesai status={result['status']}")
+            for item in feedback["failed"]:
+                log.warning(f"SIAKAD menolak {item['code']}: {item['reason']}")
             if missing:
                 log.warning(f"MK belum masuk KRS: {missing}")
             return result

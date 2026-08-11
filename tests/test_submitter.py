@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from bot import config
-from bot.submitter import find_checkbox_match, preflight_submit
+from bot.submitter import find_checkbox_match, parse_submit_feedback, preflight_submit
 
 
 def test_preflight_blocks_dry_run() -> None:
@@ -108,3 +108,32 @@ def test_checkbox_match_normalizes_class_spacing() -> None:
 
     assert match is not None
     assert match["value"] == "basis-data"
+
+
+def test_parse_submit_feedback_extracts_full_class_reason() -> None:
+    feedback = parse_submit_feedback(
+        """
+        Mata Kuliah yang berhasil diambil
+        ()
+        Mata Kuliah yang tidak berhasil diambil
+        IF2229- Kelas sudah penuh.
+        """
+    )
+
+    assert feedback["successful"] == []
+    assert feedback["failed"] == [{"code": "IF2229", "reason": "Kelas sudah penuh."}]
+
+
+def test_parse_submit_feedback_extracts_successful_codes() -> None:
+    feedback = parse_submit_feedback(
+        """
+        Mata Kuliah yang berhasil diambil
+        IF2229- Proyek Perangkat Lunak
+        IF2231- Proyek Sain Data
+        Mata Kuliah yang tidak berhasil diambil
+        IF2259- Kelas sudah penuh.
+        """
+    )
+
+    assert feedback["successful"] == ["IF2229", "IF2231"]
+    assert feedback["failed"] == [{"code": "IF2259", "reason": "Kelas sudah penuh."}]
